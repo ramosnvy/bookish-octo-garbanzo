@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Elo.Api</name>
+    </assembly>
+    <members>
+        <member name="T:Elo.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddClienteEnderecos">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddClienteEnderecos.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddClienteEnderecos.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddClienteEnderecos.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddPessoaStructure">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddPessoaStructure.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddPessoaStructure.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddPessoaStructure.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddFornecedorCategorias">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorCategorias.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorCategorias.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorCategorias.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.RemoveFornecedorCategoriaDescricao">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.RemoveFornecedorCategoriaDescricao.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.RemoveFornecedorCategoriaDescricao.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.RemoveFornecedorCategoriaDescricao.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddProdutoModuloCustoColumn">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddProdutoModuloCustoColumn.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddProdutoModuloCustoColumn.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddProdutoModuloCustoColumn.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddFornecedorToProdutos">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorToProdutos.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorToProdutos.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorToProdutos.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddProdutoModulos">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddProdutoModulos.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddProdutoModulos.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddEmpresas">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresas.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresas.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresas.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddModuloArrayToFinanceiro">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddModuloArrayToFinanceiro.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddModuloArrayToFinanceiro.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddModuloArrayToFinanceiro.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddEmpresaScope">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresaScope.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresaScope.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddEmpresaToFinanceiro">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresaToFinanceiro.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresaToFinanceiro.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddEmpresaToFinanceiro.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

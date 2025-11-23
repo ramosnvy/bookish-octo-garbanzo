@@ -1,0 +1,696 @@
+[
+  {
+    "ContainingType": "Elo.Presentation.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Elo.Application.DTOs.Auth.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Auth.LoginResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.AuthController",
+    "Method": "Logout",
+    "RelativePath": "api/Auth/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.AuthController",
+    "Method": "GetMe",
+    "RelativePath": "api/Auth/me",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.User.UserDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.AuthController",
+    "Method": "Register",
+    "RelativePath": "api/Auth/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Elo.Application.DTOs.Auth.RegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Auth.LoginResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ClientesController",
+    "Method": "GetAll",
+    "RelativePath": "api/Clientes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Elo.Application.DTOs.Cliente.ClienteDto, Elo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ClientesController",
+    "Method": "Create",
+    "RelativePath": "api/Clientes",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Cliente.CreateClienteDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Cliente.ClienteDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ClientesController",
+    "Method": "GetById",
+    "RelativePath": "api/Clientes/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Cliente.ClienteDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ClientesController",
+    "Method": "Update",
+    "RelativePath": "api/Clientes/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Cliente.UpdateClienteDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Cliente.ClienteDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ClientesController",
+    "Method": "Delete",
+    "RelativePath": "api/Clientes/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.FornecedoresController",
+    "Method": "GetAll",
+    "RelativePath": "api/Fornecedores",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "categoria",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Elo.Application.DTOs.Fornecedor.FornecedorDto, Elo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.FornecedoresController",
+    "Method": "Create",
+    "RelativePath": "api/Fornecedores",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Fornecedor.CreateFornecedorDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Fornecedor.FornecedorDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.FornecedoresController",
+    "Method": "GetById",
+    "RelativePath": "api/Fornecedores/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Fornecedor.FornecedorDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.FornecedoresController",
+    "Method": "Update",
+    "RelativePath": "api/Fornecedores/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Fornecedor.UpdateFornecedorDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Fornecedor.FornecedorDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.FornecedoresController",
+    "Method": "Delete",
+    "RelativePath": "api/Fornecedores/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ProdutosController",
+    "Method": "GetAll",
+    "RelativePath": "api/Produtos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ativo",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "valorMinimo",
+        "Type": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "valorMaximo",
+        "Type": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Elo.Application.DTOs.Produto.ProdutoDto, Elo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ProdutosController",
+    "Method": "Create",
+    "RelativePath": "api/Produtos",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Produto.CreateProdutoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Produto.ProdutoDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ProdutosController",
+    "Method": "GetById",
+    "RelativePath": "api/Produtos/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Produto.ProdutoDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ProdutosController",
+    "Method": "Update",
+    "RelativePath": "api/Produtos/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Produto.UpdateProdutoDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.Produto.ProdutoDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ProdutosController",
+    "Method": "Delete",
+    "RelativePath": "api/Produtos/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.ProdutosController",
+    "Method": "CalcularMargem",
+    "RelativePath": "api/Produtos/calcular-margem",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.Produto.CalcularMargemDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Decimal",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.UsersController",
+    "Method": "GetAll",
+    "RelativePath": "api/Users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "role",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Elo.Application.DTOs.User.UserDto, Elo, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.UsersController",
+    "Method": "Create",
+    "RelativePath": "api/Users",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.User.CreateUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.User.UserDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.UsersController",
+    "Method": "GetById",
+    "RelativePath": "api/Users/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.User.UserDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.UsersController",
+    "Method": "Update",
+    "RelativePath": "api/Users/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.User.UpdateUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Elo.Application.DTOs.User.UserDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.UsersController",
+    "Method": "Delete",
+    "RelativePath": "api/Users/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Elo.Presentation.Controllers.UsersController",
+    "Method": "ChangePassword",
+    "RelativePath": "api/Users/{id}/change-password",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Elo.Application.DTOs.User.ChangePasswordDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
