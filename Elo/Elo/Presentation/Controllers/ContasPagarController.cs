@@ -38,6 +38,22 @@ public class ContasPagarController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("calendario")]
+    public async Task<ActionResult<IEnumerable<ContaPagarCalendarEventDto>>> GetCalendar([FromQuery] ContaStatus? status, [FromQuery] DateTime? dataInicial, [FromQuery] DateTime? dataFinal, [FromQuery] int? empresaId)
+    {
+        var resolvedEmpresa = await _empresaContext.ResolveEmpresaAsync(empresaId, HttpContext.RequestAborted);
+        var query = new GetContasPagarCalendar.Query
+        {
+            EmpresaId = resolvedEmpresa,
+            Status = status,
+            DataInicial = dataInicial,
+            DataFinal = dataFinal
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<ContaPagarDto>> GetById(int id, [FromQuery] int? empresaId)
     {

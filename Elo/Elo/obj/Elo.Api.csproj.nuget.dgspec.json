@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\projetos\\Elo\\Elo\\Elo.Api.csproj": {}
+    "C:\\ramosnvy\\Elo\\Elo\\Elo.Api.csproj": {}
   },
   "projects": {
-    "C:\\projetos\\Elo\\Elo\\Elo.Api.csproj": {
+    "C:\\ramosnvy\\Elo\\Elo\\Elo.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\projetos\\Elo\\Elo\\Elo.Api.csproj",
+        "projectUniqueName": "C:\\ramosnvy\\Elo\\Elo\\Elo.Api.csproj",
         "projectName": "Elo.Api",
-        "projectPath": "C:\\projetos\\Elo\\Elo\\Elo.Api.csproj",
+        "projectPath": "C:\\ramosnvy\\Elo\\Elo\\Elo.Api.csproj",
         "packagesPath": "C:\\Users\\pedro\\.nuget\\packages\\",
-        "outputPath": "C:\\projetos\\Elo\\Elo\\obj\\",
+        "outputPath": "C:\\ramosnvy\\Elo\\Elo\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

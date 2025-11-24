@@ -1,6 +1,6 @@
 namespace Elo.Domain.Enums;
 
-public enum ImplantacaoStatus
+public enum HistoriaStatus
 {
     Pendente = 1,
     EmAndamento = 2,

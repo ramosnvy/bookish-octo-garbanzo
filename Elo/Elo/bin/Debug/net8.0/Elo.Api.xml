@@ -142,5 +142,41 @@
         <member name="M:Elo.Migrations.AddEmpresaToFinanceiro.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:Elo.Migrations.AddFornecedorPaymentTerms">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorPaymentTerms.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorPaymentTerms.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddFornecedorPaymentTerms.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.AddContaReceberIdToContaPagar">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddContaReceberIdToContaPagar.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddContaReceberIdToContaPagar.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddContaReceberIdToContaPagar.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:Elo.Migrations.RenameImplantacaoParaHistoria">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.RenameImplantacaoParaHistoria.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.RenameImplantacaoParaHistoria.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.RenameImplantacaoParaHistoria.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Elo.Domain.Entities;
+using Elo.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Elo.Infrastructure.Data;
 
@@ -13,8 +14,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Empresa> Empresas { get; set; }
     public DbSet<Pessoa> Pessoas { get; set; }
     public DbSet<Produto> Produtos { get; set; }
-    public DbSet<Implantacao> Implantacoes { get; set; }
-    public DbSet<Movimentacao> Movimentacoes { get; set; }
+    public DbSet<Historia> Historias { get; set; }
+    public DbSet<HistoriaMovimentacao> HistoriaMovimentacoes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<RespostaTicket> RespostasTicket { get; set; }
     public DbSet<ContaReceber> ContasReceber { get; set; }
@@ -67,6 +68,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Tipo).IsRequired();
             entity.HasIndex(e => new { e.EmpresaId, e.Documento }).IsUnique();
             entity.HasIndex(e => new { e.EmpresaId, e.Email }).IsUnique();
+            entity.Property(e => e.ServicoPagamentoTipo).IsRequired().HasDefaultValue(ServicoPagamentoTipo.PrePago);
+            entity.Property(e => e.PrazoPagamentoDias).IsRequired().HasDefaultValue(0);
 
             entity.HasOne(e => e.Empresa)
                 .WithMany()
@@ -145,19 +148,19 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Ativo).HasDefaultValue(true);
         });
 
-        // Implantacao configuration
-        modelBuilder.Entity<Implantacao>(entity =>
+        // Historia configuration
+        modelBuilder.Entity<Historia>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Observacoes).HasMaxLength(1000);
 
             entity.HasOne(d => d.Cliente)
-                .WithMany(p => p.Implantacoes)
+                .WithMany(p => p.Historias)
                 .HasForeignKey(d => d.ClienteId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(d => d.Produto)
-                .WithMany(p => p.Implantacoes)
+                .WithMany(p => p.Historias)
                 .HasForeignKey(d => d.ProdutoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -167,15 +170,15 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Movimentacao configuration
-        modelBuilder.Entity<Movimentacao>(entity =>
+        // HistoriaMovimentacao configuration
+        modelBuilder.Entity<HistoriaMovimentacao>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Observacoes).HasMaxLength(500);
 
-            entity.HasOne(d => d.Implantacao)
+            entity.HasOne(d => d.Historia)
                 .WithMany(p => p.Movimentacoes)
-                .HasForeignKey(d => d.ImplantacaoId)
+                .HasForeignKey(d => d.HistoriaId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(d => d.Usuario)
@@ -254,6 +257,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Descricao).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Valor).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Categoria).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => new { e.EmpresaId, e.ContaReceberId });
 
             entity.HasOne(e => e.Empresa)
                 .WithMany()

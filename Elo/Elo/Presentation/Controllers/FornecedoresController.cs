@@ -68,6 +68,8 @@ public class FornecedoresController : ControllerBase
                 Telefone = dto.Telefone,
                 CategoriaId = dto.CategoriaId,
                 Status = dto.Status.ToString(),
+                TipoPagamentoServico = dto.TipoPagamentoServico,
+                PrazoPagamentoDias = dto.PrazoPagamentoDias,
                 Enderecos = dto.Enderecos,
                 EmpresaId = empresaId
             };
@@ -96,6 +98,8 @@ public class FornecedoresController : ControllerBase
                 Telefone = dto.Telefone,
                 CategoriaId = dto.CategoriaId,
                 Status = dto.Status.ToString(),
+                TipoPagamentoServico = dto.TipoPagamentoServico,
+                PrazoPagamentoDias = dto.PrazoPagamentoDias,
                 Enderecos = dto.Enderecos,
                 EmpresaId = empresaId
             };

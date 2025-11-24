@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const fallbackApiUrl = "http://localhost/api";
+const fallbackApiUrl = "https://localhost:7271/api";
 
 const baseURL =
   import.meta.env?.VITE_API_URL && import.meta.env.VITE_API_URL.trim().length > 0

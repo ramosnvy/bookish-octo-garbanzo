@@ -18,6 +18,8 @@ public static class UpdateFornecedor
         public string Telefone { get; set; } = string.Empty;
         public int CategoriaId { get; set; }
         public string Status { get; set; } = string.Empty;
+        public string TipoPagamentoServico { get; set; } = ServicoPagamentoTipo.PrePago.ToString();
+        public int PrazoPagamentoDias { get; set; }
         public IEnumerable<FornecedorEnderecoInputDto> Enderecos { get; set; } = Enumerable.Empty<FornecedorEnderecoInputDto>();
         public int EmpresaId { get; set; }
     }
@@ -36,6 +38,7 @@ public static class UpdateFornecedor
         public async Task<FornecedorDto> Handle(Command request, CancellationToken cancellationToken)
         {
             var status = Enum.TryParse<Status>(request.Status, true, out var parsedStatus) ? parsedStatus : Status.Ativo;
+            var tipoPagamento = Enum.TryParse<ServicoPagamentoTipo>(request.TipoPagamentoServico, true, out var parsedTipo) ? parsedTipo : ServicoPagamentoTipo.PrePago;
             var enderecoEntities = (request.Enderecos ?? Enumerable.Empty<FornecedorEnderecoInputDto>()).Select(e => new PessoaEndereco
             {
                 Logradouro = e.Logradouro,
@@ -57,7 +60,9 @@ public static class UpdateFornecedor
                 status,
                 request.CategoriaId,
                 enderecoEntities,
-                request.EmpresaId
+                request.EmpresaId,
+                tipoPagamento,
+                request.PrazoPagamentoDias
             );
 
             return _fornecedorMapper.ToDto(fornecedor);

@@ -12,12 +12,12 @@ dotnet run
 ```
 
 A API estará disponível em:
-- HTTPS: `https://localhost:7000`
-- HTTP: `http://localhost:5000`
+- HTTPS: `https://localhost:7271`
+- HTTP: `http://localhost:5172`
 
 ### 2. Acessar o Swagger
 
-Abra seu navegador e acesse: `https://localhost:7000/swagger`
+Abra seu navegador e acesse: `https://localhost:7271/swagger`
 
 ## Exemplos de Requisições
 
@@ -177,7 +177,7 @@ Authorization: Bearer SEU_JWT_TOKEN_AQUI
 
 ### Login
 ```bash
-curl -X POST "https://localhost:7000/api/auth/login" \
+curl -X POST "https://localhost:7271/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@elo.com",
@@ -187,7 +187,7 @@ curl -X POST "https://localhost:7000/api/auth/login" \
 
 ### Criar Cliente
 ```bash
-curl -X POST "https://localhost:7000/api/clientes" \
+curl -X POST "https://localhost:7271/api/clientes" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer SEU_TOKEN_AQUI" \
   -d '{
@@ -201,7 +201,7 @@ curl -X POST "https://localhost:7000/api/clientes" \
 
 ### Listar Clientes
 ```bash
-curl -X GET "https://localhost:7000/api/clientes" \
+curl -X GET "https://localhost:7271/api/clientes" \
   -H "Authorization: Bearer SEU_TOKEN_AQUI"
 ```
 

@@ -1,179 +1,105 @@
 # API Elo
 
-API desenvolvida seguindo os padrões SOLID, Clean Architecture e CQRS com .NET 8, Entity Framework Core e PostgreSQL.
+API multi-empresa construída com .NET 8, ASP.NET Core Web API, PostgreSQL e CQRS/MediatR. O projeto segue princípios de Clean Architecture e SOLID, mantendo serviços de domínio isolados e casos de uso (Commands/Queries + Handler) consolidados por arquivo.
 
-## Tecnologias Utilizadas
+## Stack principal
 
-- .NET 8
-- Entity Framework Core 8.0
-- PostgreSQL
-- JWT Authentication
-- MediatR (CQRS)
-- BCrypt para hash de senhas
-- Swagger/OpenAPI
+- .NET 8 / ASP.NET Core Web API
+- Entity Framework Core 8 (Npgsql)
+- MediatR + CQRS
+- FluentValidation (pipeline de validação já configurado)
+- JWT + BCrypt
+- Swagger (habilitado em Development)
+- Docker Compose para banco PostgreSQL
 
-## Estrutura do Projeto
+## Arquitetura e organização
 
 ```
 Elo/
-├── Domain/                 # Camada de Domínio
-│   ├── Entities/          # Entidades do domínio
-│   ├── Enums/            # Enumeradores
-│   └── ValueObjects/     # Objetos de valor
-├── Application/           # Camada de Aplicação
-│   ├── Commands/         # Comandos CQRS
-│   ├── Queries/          # Consultas CQRS
-│   ├── Handlers/         # Handlers para Commands e Queries
-│   ├── DTOs/             # Data Transfer Objects
-│   ├── Interfaces/       # Interfaces da aplicação
-│   └── Validators/       # Validadores
-├── Infrastructure/        # Camada de Infraestrutura
-│   ├── Data/            # DbContext e configurações
-│   ├── Repositories/     # Implementações dos repositórios
-│   ├── Services/        # Serviços de infraestrutura
-│   └── Middleware/      # Middlewares customizados
-└── Presentation/         # Camada de Apresentação
-    └── Controllers/      # Controllers da API
+├── Domain/                     # Regras de domínio puras
+│   ├── Entities/               # Empresa, Pessoa (Cliente/Fornecedor), Produto, Contas, Tickets etc.
+│   ├── Enums/                  # Status/roles/enums de negócio
+│   ├── Exceptions/             # Exceções de domínio
+│   ├── Interfaces/             # Portas de domínio (serviços e repositórios)
+│   ├── Services/               # Serviços de domínio (Pessoa, User, Produto...)
+│   └── ValueObjects/           # Reservado (ainda sem objetos de valor)
+├── Application/                # Orquestração de casos de uso
+│   ├── UseCases/               # Command/Query + Handler no mesmo arquivo
+│   │   ├── Auth/               # Login, Register, Me
+│   │   ├── Users/              # CRUD + troca de senha
+│   │   ├── Empresas/           # Administração de empresas
+│   │   ├── Clientes/           # CRUD
+│   │   ├── Fornecedores/       # CRUD
+│   │   ├── FornecedorCategorias/ # CRUD
+│   │   ├── Produtos/           # CRUD + cálculo de margem
+│   │   ├── ContasReceber/      # CRUD + mudança de status de parcela
+│   │   └── ContasPagar/        # CRUD + visão de calendário
+│   ├── DTOs/                   # Modelos expostos pela API
+│   ├── Interfaces/             # Serviços de aplicação (JWT, contexto da empresa)
+│   ├── Mappers/                # Tradução entidade ⇄ DTO
+│   ├── Services/               # Serviços de aplicação
+│   └── Validators/             # Validadores (pipeline do MediatR)
+├── Infrastructure/             # Adaptadores
+│   ├── Configuration/          # Swagger, etc.
+│   ├── Data/                   # DbContext, migrations, seed
+│   ├── Middleware/             # Tratamento global de exceção
+│   ├── Repositories/           # Implementação de UoW/repos
+│   └── Services/               # JWT, contexto de empresa, etc.
+└── Presentation/               # Borda HTTP
+    └── Controllers/            # Endpoints agrupados por domínio
 ```
 
-## Configuração
+## Configuração e execução
 
-### 1. Banco de Dados
+1. Pré-requisitos: .NET 8 SDK, Docker (para subir o PostgreSQL) e acesso à porta 5432.
+2. Suba o banco local (opcional, se já tiver um PostgreSQL disponível):
+   ```bash
+   cd Elo
+   docker-compose up -d
+   ```
+3. Ajuste `Elo/appsettings.json` (ou `appsettings.Development.json`) com a string de conexão e chaves JWT. O padrão aponta para `Host=localhost;Port=5432;Database=elo;Username=elo;Password=elo123`.
+4. Restaure/rode a aplicação:
+   ```bash
+   dotnet restore Elo/Elo.Api.csproj
+   dotnet run --project Elo/Elo.Api.csproj --launch-profile https
+   ```
+   - Perfis expõem por padrão `https://localhost:7271` e `http://localhost:5172` (Swagger habilitado em Development).
+   - O `DbInitializer` cria um usuário admin se o banco estiver vazio: `admin@elo.com` / `123456` (sem empresa associada = "admin global").
 
-Configure a string de conexão no `appsettings.json`:
+> Observação: a aplicação chama `EnsureCreated` no startup. Caso queira evoluir o schema via migrations, rode `dotnet ef database update` a partir da pasta `Elo` para aplicar as migrations já versionadas.
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=EloDB;Username=postgres;Password=postgres"
-  }
-}
-```
+## Autenticação e escopo de empresa
 
-### 2. JWT Configuration
+- Autenticação via Bearer JWT; o token inclui `companyId` quando o usuário pertence a uma empresa.
+- Usuário sem `companyId` e com role `Admin` é tratado como admin global e pode agir em qualquer empresa passando `?empresaId=` nas rotas que suportam o parâmetro.
+- Demais usuários operam somente na empresa do token (resolvida pelo `IEmpresaContextService`).
 
-Configure as chaves JWT no `appsettings.json`:
+## Endpoints implementados
 
-```json
-{
-  "Jwt": {
-    "SecretKey": "MinhaChaveSecretaSuperSeguraParaJWT2024!@#",
-    "Issuer": "EloAPI",
-    "Audience": "EloClient",
-    "ExpirationMinutes": 60
-  }
-}
-```
+- **Auth (`/api/auth`)**: `POST login`, `POST register`, `GET me` (autenticado), `POST logout` (stateless).
+- **Empresas (`/api/empresas`, Admin)**: `GET`, `POST`, `PUT` (cria empresa e usuário inicial).
+- **Usuários (`/api/users`)**: `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `PUT /{id}/change-password`.
+- **Clientes (`/api/clientes`)**: `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}` (endereços incluídos).
+- **Fornecedores (`/api/fornecedores`)**: `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}` (categoria, condições de pagamento, endereços).
+- **Categorias de fornecedores (`/api/fornecedorcategorias`)**: `GET`, `POST`, `PUT /{id}`, `DELETE /{id}`.
+- **Produtos (`/api/produtos`)**: `GET`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `POST /calcular-margem` (cálculo simples de margem).
+- **Histórias (`/api/historias`)**: `GET` com filtros de status/tipo/cliente/produto/responsável, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/movimentacoes` (atualiza status e histórico).
+- **Tickets (`/api/tickets`)**: `GET` com filtros, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/respostas` (respostas internas/externas).
+- **Financeiro - Contas a Receber (`/api/financeiro/contas-receber`)**: `GET` com filtros de status/período, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`, `PUT /{contaId}/parcelas/{parcelaId}/status`.
+- **Financeiro - Contas a Pagar (`/api/financeiro/contas-pagar`)**: `GET` com filtros de status/período, `GET /calendario` (eventos para calendário), `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}`.
 
-### 3. Executar a Aplicação
+## Lacunas e pendências mapeadas
+
+- Paginação, busca e filtros (`page`, `pageSize`, `search`, etc.) estão aceitos nas rotas de usuários, clientes, fornecedores e produtos, mas ainda não são aplicados nos handlers (retornam lista completa).
+- Validações FluentValidation estão configuradas no pipeline, porém só existe validador para criação de cliente; demais comandos/DTOs ainda sem validação específica.
+- `Domain/ValueObjects` e eventos de domínio ainda não foram implementados (pastas vazias).
+- Testes automatizados (unitários/integração) e logging estruturado ainda não existem no repositório.
+- `POST /api/auth/register` não associa o usuário a uma empresa; o vínculo só é feito via CRUD de usuários (pode ser um ajuste necessário para onboarding).
+
+## Exemplo rápido (login)
 
 ```bash
-cd Elo/Elo
-dotnet restore
-dotnet run
-```
-
-A API estará disponível em `https://localhost:7000` (ou porta configurada).
-
-## Endpoints Disponíveis
-
-### Autenticação
-
-- `POST /api/auth/login` - Login de usuário
-- `POST /api/auth/register` - Registro de usuário
-
-### Clientes
-
-- `GET /api/clientes` - Listar todos os clientes
-- `GET /api/clientes/{id}` - Obter cliente por ID
-- `POST /api/clientes` - Criar novo cliente
-- `PUT /api/clientes/{id}` - Atualizar cliente
-- `DELETE /api/clientes/{id}` - Deletar cliente
-
-## Modelos de Dados
-
-### Users
-- Id, Nome, Email, PasswordHash, Role
-
-### Clientes
-- Id, Nome, CnpjCpf, Email, Telefone, Status, DataCadastro
-
-### Fornecedores
-- Id, Nome, Cnpj, Email, Telefone, Categoria, Status, DataCadastro
-
-### Produtos
-- Id, Nome, Descricao, ValorCusto, ValorRevenda, MargemLucro, Ativo
-
-### Implantacoes
-- Id, ClienteId, ProdutoId, Status, UsuarioResponsavelId, DataInicio, DataFinalizacao, Observacoes
-
-### Movimentacoes
-- Id, ImplantacaoId, StatusAnterior, StatusNovo, UsuarioId, DataMovimentacao
-
-### Tickets
-- Id, ClienteId, Titulo, Descricao, Tipo, Prioridade, Status, UsuarioAtribuidoId, DataAbertura, DataFechamento
-
-### RespostasTicket
-- Id, TicketId, UsuarioId, Mensagem, DataResposta
-
-### ContasReceber
-- Id, ClienteId, Descricao, Valor, DataVencimento, DataRecebimento, Status, FormaPagamento
-
-### ContasPagar
-- Id, FornecedorId, Descricao, Valor, DataVencimento, DataPagamento, Status, Categoria
-
-## Exemplos de Uso
-
-### Login
-
-```bash
-curl -X POST "https://localhost:7000/api/auth/login" \
+curl -X POST "https://localhost:7271/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@elo.com",
-    "password": "123456"
-  }'
+  -d '{"email": "admin@elo.com", "password": "123456"}'
 ```
-
-### Criar Cliente
-
-```bash
-curl -X POST "https://localhost:7000/api/clientes" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer SEU_JWT_TOKEN" \
-  -d '{
-    "nome": "Cliente Exemplo",
-    "cnpjCpf": "12345678901",
-    "email": "cliente@exemplo.com",
-    "telefone": "11999999999",
-    "status": "Ativo"
-  }'
-```
-
-## Padrões Implementados
-
-### SOLID
-- **S**ingle Responsibility: Cada classe tem uma única responsabilidade
-- **O**pen/Closed: Aberto para extensão, fechado para modificação
-- **L**iskov Substitution: Substituição de implementações
-- **I**nterface Segregation: Interfaces específicas e coesas
-- **D**ependency Inversion: Dependência de abstrações, não implementações
-
-### Clean Architecture
-- Separação clara entre camadas
-- Dependências apontam para dentro
-- Domínio independente de frameworks
-
-### CQRS
-- Separação entre Commands (escrita) e Queries (leitura)
-- Handlers específicos para cada operação
-- Uso do MediatR para desacoplamento
-
-## Próximos Passos
-
-1. Implementar controllers para as demais entidades
-2. Adicionar validações com FluentValidation
-3. Implementar paginação
-4. Adicionar logs estruturados
-5. Implementar testes unitários
-6. Adicionar documentação Swagger mais detalhada

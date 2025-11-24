@@ -7,6 +7,7 @@ public class ContaPagar
     public int Id { get; set; }
     public int EmpresaId { get; set; }
     public int FornecedorId { get; set; }
+    public int? ContaReceberId { get; set; }
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
     public DateTime DataVencimento { get; set; }

@@ -54,6 +54,8 @@ export interface ClienteEnderecoInput {
 export type FornecedorEndereco = ClienteEndereco;
 export type FornecedorEnderecoInput = ClienteEnderecoInput;
 
+export type FornecedorPagamentoTipo = "PRE" | "POS";
+
 export interface FornecedorDto {
   id: number;
   nome: string;
@@ -64,6 +66,8 @@ export interface FornecedorDto {
   categoriaNome: string;
   status: number | string;
   enderecos: FornecedorEndereco[];
+  tipoPagamento: FornecedorPagamentoTipo;
+  prazoPagamentoDias: number;
 }
 
 export interface CreateFornecedorRequest {
@@ -74,6 +78,8 @@ export interface CreateFornecedorRequest {
   categoriaId: number;
   status: number;
   enderecos: FornecedorEnderecoInput[];
+  tipoPagamento: FornecedorPagamentoTipo;
+  prazoPagamentoDias: number;
 }
 
 export interface FornecedorCategoriaDto {
@@ -230,7 +236,6 @@ export interface ContaReceberDto {
   dataRecebimento?: string | null;
   status: ContaStatus;
   formaPagamento: FormaPagamento;
-  isRecorrente: boolean;
   totalParcelas: number;
   intervaloDias: number;
   createdAt: string;
@@ -265,7 +270,6 @@ export interface CreateContaReceberRequest {
   dataRecebimento?: string | null;
   status: ContaStatus;
   formaPagamento: FormaPagamento;
-  isRecorrente?: boolean;
   numeroParcelas?: number;
   intervaloDias?: number;
   itens?: ContaFinanceiroItemInput[];
@@ -293,6 +297,11 @@ export interface ContaReceberItemDto extends ContaFinanceiroItemInput {
   contaReceberId: number;
 }
 
+export interface UpdateContaReceberParcelaStatusRequest {
+  status: ContaStatus;
+  dataRecebimento?: string | null;
+}
+
 export interface ContaParcelaDto {
   id: number;
   numero: number;
@@ -300,4 +309,69 @@ export interface ContaParcelaDto {
   dataVencimento: string;
   dataPagamento?: string | null;
   status: ContaStatus;
+}
+
+export enum HistoriaStatus {
+  Pendente = 1,
+  EmAndamento = 2,
+  Concluida = 3,
+  Cancelada = 4,
+  Pausada = 5,
+}
+
+export enum HistoriaTipo {
+  Projeto = 1,
+  Entrega = 2,
+  Operacao = 3,
+  Implementacao = 4,
+  OrdemDeServico = 5,
+}
+
+export interface HistoriaMovimentacaoDto {
+  id: number;
+  historiaId: number;
+  statusAnterior: HistoriaStatus;
+  statusNovo: HistoriaStatus;
+  usuarioId: number;
+  usuarioNome: string;
+  dataMovimentacao: string;
+  observacoes?: string | null;
+}
+
+export interface HistoriaDto {
+  id: number;
+  clienteId: number;
+  clienteNome: string;
+  produtoId: number;
+  produtoNome: string;
+  status: HistoriaStatus;
+  tipo: HistoriaTipo;
+  usuarioResponsavelId: number;
+  usuarioResponsavelNome: string;
+  dataInicio: string;
+  dataFinalizacao?: string | null;
+  observacoes?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+  movimentacoes: HistoriaMovimentacaoDto[];
+}
+
+export interface CreateHistoriaRequest {
+  clienteId: number;
+  produtoId: number;
+  status: HistoriaStatus;
+  tipo: HistoriaTipo;
+  usuarioResponsavelId: number;
+  dataInicio?: string | null;
+  dataFinalizacao?: string | null;
+  observacoes?: string | null;
+}
+
+export interface UpdateHistoriaRequest extends CreateHistoriaRequest {
+  id: number;
+}
+
+export interface CreateHistoriaMovimentacaoRequest {
+  statusNovo: HistoriaStatus;
+  observacoes?: string | null;
 }

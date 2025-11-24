@@ -3,6 +3,7 @@ using Elo.Domain.Enums;
 using Elo.Domain.Exceptions;
 using Elo.Domain.Interfaces;
 using Elo.Domain.Interfaces.Repositories;
+using System;
 using System.Linq;
 
 namespace Elo.Domain.Services;
@@ -16,7 +17,7 @@ public class PessoaService : IPessoaService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Pessoa> CriarPessoaAsync(PessoaTipo tipo, string nome, string documento, string email, string telefone, Status status, int? categoriaId, IEnumerable<PessoaEndereco> enderecos, int empresaId)
+    public async Task<Pessoa> CriarPessoaAsync(PessoaTipo tipo, string nome, string documento, string email, string telefone, Status status, int? categoriaId, IEnumerable<PessoaEndereco> enderecos, int empresaId, ServicoPagamentoTipo? servicoPagamentoTipo, int? prazoPagamentoDias)
     {
         await ValidarDuplicidadesAsync(documento, email, empresaId);
         var categoria = await ObterCategoriaAsync(tipo, categoriaId, empresaId);
@@ -35,6 +36,13 @@ public class PessoaService : IPessoaService
             DataCadastro = DateTime.UtcNow
         };
 
+        if (tipo == PessoaTipo.Fornecedor)
+        {
+            ValidarTermosPagamento(servicoPagamentoTipo, prazoPagamentoDias);
+            pessoa.ServicoPagamentoTipo = servicoPagamentoTipo!.Value;
+            pessoa.PrazoPagamentoDias = Math.Max(0, prazoPagamentoDias!.Value);
+        }
+
         await _unitOfWork.Pessoas.AddAsync(pessoa);
         await _unitOfWork.SaveChangesAsync();
 
@@ -44,7 +52,7 @@ public class PessoaService : IPessoaService
         return pessoa;
     }
 
-    public async Task<Pessoa> AtualizarPessoaAsync(int id, PessoaTipo tipo, string nome, string documento, string email, string telefone, Status status, int? categoriaId, IEnumerable<PessoaEndereco> enderecos, int empresaId)
+    public async Task<Pessoa> AtualizarPessoaAsync(int id, PessoaTipo tipo, string nome, string documento, string email, string telefone, Status status, int? categoriaId, IEnumerable<PessoaEndereco> enderecos, int empresaId, ServicoPagamentoTipo? servicoPagamentoTipo, int? prazoPagamentoDias)
     {
         var pessoa = await _unitOfWork.Pessoas.GetByIdAsync(id);
         if (pessoa == null || pessoa.Tipo != tipo || pessoa.EmpresaId != empresaId)
@@ -64,6 +72,13 @@ public class PessoaService : IPessoaService
         pessoa.FornecedorCategoria = categoria;
         pessoa.Status = status;
         pessoa.UpdatedAt = DateTime.UtcNow;
+
+        if (tipo == PessoaTipo.Fornecedor)
+        {
+            ValidarTermosPagamento(servicoPagamentoTipo, prazoPagamentoDias);
+            pessoa.ServicoPagamentoTipo = servicoPagamentoTipo!.Value;
+            pessoa.PrazoPagamentoDias = Math.Max(0, prazoPagamentoDias!.Value);
+        }
 
         await _unitOfWork.Pessoas.UpdateAsync(pessoa);
         await _unitOfWork.SaveChangesAsync();
@@ -206,5 +221,23 @@ public class PessoaService : IPessoaService
         }
 
         return categoria;
+    }
+
+    private static void ValidarTermosPagamento(ServicoPagamentoTipo? servicoPagamentoTipo, int? prazoPagamentoDias)
+    {
+        if (!servicoPagamentoTipo.HasValue)
+        {
+            throw new InvalidOperationException("Tipo de pagamento é obrigatório para fornecedores.");
+        }
+
+        if (!prazoPagamentoDias.HasValue)
+        {
+            throw new InvalidOperationException("Prazo de pagamento é obrigatório para fornecedores.");
+        }
+
+        if (prazoPagamentoDias.Value < 0)
+        {
+            throw new InvalidOperationException("Prazo de pagamento não pode ser negativo.");
+        }
     }
 }

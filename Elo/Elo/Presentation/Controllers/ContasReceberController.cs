@@ -5,6 +5,7 @@ using Elo.Application.DTOs.Financeiro;
 using Elo.Application.UseCases.ContasReceber;
 using Elo.Application.Interfaces;
 using Elo.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace Elo.Presentation.Controllers;
 
@@ -82,5 +83,21 @@ public class ContasReceberController : ControllerBase
         var command = new DeleteContaReceber.Command { Id = id, EmpresaId = empresaId };
         await _mediator.Send(command);
         return NoContent();
+    }
+
+    [HttpPut("{contaId}/parcelas/{parcelaId}/status")]
+    public async Task<ActionResult<ContaReceberParcelaDto>> UpdateParcelaStatus(int contaId, int parcelaId, [FromBody] UpdateContaReceberParcelaStatusDto dto)
+    {
+        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
+        var command = new UpdateContaReceberParcelaStatus.Command
+        {
+            EmpresaId = empresaId,
+            ContaId = contaId,
+            ParcelaId = parcelaId,
+            Status = dto.Status,
+            DataRecebimento = dto.DataRecebimento
+        };
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 }

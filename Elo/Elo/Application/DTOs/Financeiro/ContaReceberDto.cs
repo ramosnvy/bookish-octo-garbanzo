@@ -63,3 +63,9 @@ public class ContaReceberParcelaDto
     public DateTime? DataRecebimento { get; set; }
     public ContaStatus Status { get; set; }
 }
+
+public class UpdateContaReceberParcelaStatusDto
+{
+    public ContaStatus Status { get; set; }
+    public DateTime? DataRecebimento { get; set; }
+}

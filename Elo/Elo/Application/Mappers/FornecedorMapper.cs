@@ -17,6 +17,8 @@ public class FornecedorMapper : IFornecedorMapper
             CategoriaId = pessoa.FornecedorCategoriaId,
             CategoriaNome = pessoa.FornecedorCategoria?.Nome ?? pessoa.Categoria,
             Status = pessoa.Status,
+            TipoPagamentoServico = pessoa.ServicoPagamentoTipo,
+            PrazoPagamentoDias = pessoa.PrazoPagamentoDias,
             DataCadastro = pessoa.DataCadastro,
             UpdatedAt = pessoa.UpdatedAt,
             Enderecos = pessoa.Enderecos?.Select(e => new FornecedorEnderecoDto

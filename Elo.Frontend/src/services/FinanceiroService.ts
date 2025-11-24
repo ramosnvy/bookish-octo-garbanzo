@@ -39,6 +39,17 @@ export const ContasReceberService = {
     const { data } = await api.put<ContaReceberDto>(`/financeiro/contas-receber/${id}`, payload);
     return data;
   },
+  async updateParcelaStatus(
+    contaId: number,
+    parcelaId: number,
+    payload: UpdateContaReceberParcelaStatusRequest
+  ): Promise<ContaParcelaDto> {
+    const { data } = await api.put<ContaParcelaDto>(
+      `/financeiro/contas-receber/${contaId}/parcelas/${parcelaId}/status`,
+      payload
+    );
+    return data;
+  },
   async remove(id: number): Promise<void> {
     await api.delete(`/financeiro/contas-receber/${id}`);
   },

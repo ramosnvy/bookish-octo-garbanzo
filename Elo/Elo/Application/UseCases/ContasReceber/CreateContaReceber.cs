@@ -19,7 +19,7 @@ public static class CreateContaReceber
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPessoaService _pessoaService;
-
+            
         public Handler(IUnitOfWork unitOfWork, IPessoaService pessoaService)
         {
             _unitOfWork = unitOfWork;
@@ -35,7 +35,7 @@ public static class CreateContaReceber
             }
 
             var itens = (request.Dto.Itens ?? Enumerable.Empty<ContaFinanceiraItemInputDto>())
-                .Where(i => i != null && i.Valor > 0 && (!string.IsNullOrWhiteSpace(i.Descricao) || i.ProdutoId.HasValue || i.ProdutoModuloId.HasValue || (i.ProdutoModuloIds?.Any() ?? false)))
+                .Where(i => i != null && i.Valor > 0 && !string.IsNullOrWhiteSpace(i.Descricao))
                 .ToList();
             var totalItens = itens.Sum(i => i.Valor);
             var valorTotal = totalItens > 0 ? totalItens : request.Dto.Valor;
@@ -59,7 +59,7 @@ public static class CreateContaReceber
                 DataRecebimento = dataRecebimento,
                 Status = request.Dto.Status,
                 FormaPagamento = request.Dto.FormaPagamento,
-                IsRecorrente = request.Dto.IsRecorrente,
+                IsRecorrente = false,
                 TotalParcelas = numeroParcelas,
                 IntervaloDias = intervaloDias,
                 CreatedAt = DateTime.UtcNow
@@ -72,13 +72,12 @@ public static class CreateContaReceber
             {
                 foreach (var item in itens)
                 {
-                    var modulos = NormalizarModulos(item);
                     await _unitOfWork.ContaReceberItens.AddAsync(new ContaReceberItem
                     {
                         EmpresaId = request.EmpresaId,
                         ContaReceberId = conta.Id,
-                        ProdutoId = item.ProdutoId,
-                        ProdutoModuloIds = modulos,
+                        ProdutoId = null,
+                        ProdutoModuloIds = new List<int>(),
                         Descricao = string.IsNullOrWhiteSpace(item.Descricao) ? conta.Descricao : item.Descricao,
                         Valor = item.Valor
                     });
@@ -108,23 +107,22 @@ public static class CreateContaReceber
                 DataRecebimento = conta.DataRecebimento,
                 Status = conta.Status,
                 FormaPagamento = conta.FormaPagamento,
-                IsRecorrente = conta.IsRecorrente,
+                IsRecorrente = false,
                 TotalParcelas = conta.TotalParcelas,
                 IntervaloDias = conta.IntervaloDias,
                 CreatedAt = conta.CreatedAt,
                 UpdatedAt = conta.UpdatedAt,
                 Itens = itens.Select(i =>
                 {
-                    var modulos = NormalizarModulos(i);
                     return new ContaReceberItemDto
                     {
                         Id = 0,
                         ContaReceberId = conta.Id,
                         Descricao = string.IsNullOrWhiteSpace(i.Descricao) ? conta.Descricao : i.Descricao,
                         Valor = i.Valor,
-                        ProdutoId = i.ProdutoId,
-                        ProdutoModuloId = modulos.FirstOrDefault(),
-                        ProdutoModuloIds = modulos
+                        ProdutoId = null,
+                        ProdutoModuloId = null,
+                        ProdutoModuloIds = new List<int>()
                     };
                 }),
                 Parcelas = parcelas.Select(p => new ContaReceberParcelaDto
@@ -139,34 +137,16 @@ public static class CreateContaReceber
             };
         }
 
-        private static List<int> NormalizarModulos(ContaFinanceiraItemInputDto item)
-        {
-            var lista = item.ProdutoModuloIds?.Where(id => id > 0).Distinct().ToList() ?? new List<int>();
-            if (!lista.Any() && item.ProdutoModuloId.HasValue && item.ProdutoModuloId.Value > 0)
-            {
-                lista.Add(item.ProdutoModuloId.Value);
-            }
-            return lista;
-        }
-
         private static List<ContaReceberParcela> GerarParcelas(ContaReceber conta, int numeroParcelas, int intervaloDias, decimal valorTotal)
         {
             var parcelas = new List<ContaReceberParcela>();
-            var gerarValorRepetido = conta.IsRecorrente;
-            var valorBase = gerarValorRepetido
-                ? valorTotal
-                : Math.Round(valorTotal / numeroParcelas, 2, MidpointRounding.AwayFromZero);
+            var valorBase = Math.Round(valorTotal / numeroParcelas, 2, MidpointRounding.AwayFromZero);
             decimal acumulado = 0;
 
             for (int i = 1; i <= numeroParcelas; i++)
             {
-                var valor = gerarValorRepetido
-                    ? valorTotal
-                    : (i == numeroParcelas ? valorTotal - acumulado : valorBase);
-                if (!gerarValorRepetido)
-                {
-                    acumulado += valor;
-                }
+                var valor = i == numeroParcelas ? valorTotal - acumulado : valorBase;
+                acumulado += valor;
                 var vencimento = conta.DataVencimento.AddDays(intervaloDias * (i - 1));
 
                 parcelas.Add(new ContaReceberParcela

@@ -3,7 +3,7 @@ import { api } from "../api/client";
 
 export const UserService = {
   async getAll(empresaId?: number | null): Promise<UserDto[]> {
-    const params = empresaId === undefined ? undefined : { empresaId };
+    const params = empresaId === undefined || empresaId === null ? undefined : { empresaId };
     const { data } = await api.get<UserDto[]>("/users", { params });
     return data;
   },

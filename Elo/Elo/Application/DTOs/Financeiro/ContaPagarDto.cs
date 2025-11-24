@@ -72,3 +72,21 @@ public class ContaFinanceiraItemInputDto
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
 }
+
+public class ContaPagarCalendarEventDto
+{
+    public DateTime Data { get; set; }
+    public decimal ValorTotal { get; set; }
+    public IEnumerable<ContaPagarCalendarItemDto> Contas { get; set; } = Enumerable.Empty<ContaPagarCalendarItemDto>();
+}
+
+public class ContaPagarCalendarItemDto
+{
+    public int Id { get; set; }
+    public string Descricao { get; set; } = string.Empty;
+    public decimal Valor { get; set; }
+    public DateTime DataVencimento { get; set; }
+    public ContaStatus Status { get; set; }
+    public int FornecedorId { get; set; }
+    public string FornecedorNome { get; set; } = string.Empty;
+}

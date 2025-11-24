@@ -75,7 +75,7 @@ public static class GetAllContasReceber
                 DataRecebimento = c.DataRecebimento,
                 Status = c.Status,
                 FormaPagamento = c.FormaPagamento,
-                IsRecorrente = c.IsRecorrente,
+                IsRecorrente = false,
                 TotalParcelas = c.TotalParcelas,
                 IntervaloDias = c.IntervaloDias,
                 CreatedAt = c.CreatedAt,

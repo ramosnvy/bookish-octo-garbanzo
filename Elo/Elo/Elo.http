@@ -1,4 +1,4 @@
-@Elo_HostAddress = http://localhost:5172
+@Elo_HostAddress = https://localhost:7271
 
 GET {{Elo_HostAddress}}/elo/
 Accept: application/json

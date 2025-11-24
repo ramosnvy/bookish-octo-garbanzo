@@ -50,7 +50,7 @@ public static class GetContaReceberById
                 DataRecebimento = conta.DataRecebimento,
                 Status = conta.Status,
                 FormaPagamento = conta.FormaPagamento,
-                IsRecorrente = conta.IsRecorrente,
+                IsRecorrente = false,
                 TotalParcelas = conta.TotalParcelas,
                 IntervaloDias = conta.IntervaloDias,
                 CreatedAt = conta.CreatedAt,

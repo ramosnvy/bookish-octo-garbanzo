@@ -134,11 +134,37 @@ const FornecedorCategoriasPage = () => {
                   {!isGlobalAdmin && (
                     <td>
                       <div className="table-actions">
-                        <button className="ghost" onClick={() => handleOpenEdit(categoria)}>
-                          Editar
+                        <button
+                          className="ghost primary icon-only"
+                          onClick={() => handleOpenEdit(categoria)}
+                          aria-label={`Editar categoria ${categoria.nome}`}
+                          title="Editar categoria"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                              d="M7 17L5 19V15L15.5 4.5C16.0523 3.94772 16.9477 3.94772 17.5 4.5L19.5 6.5C20.0523 7.05228 20.0523 7.94772 19.5 8.5L9 19H7Z"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         </button>
-                        <button className="ghost" onClick={() => handleDelete(categoria.id)}>
-                          Excluir
+                        <button
+                          className="ghost icon-only danger"
+                          onClick={() => handleDelete(categoria.id)}
+                          aria-label={`Excluir categoria ${categoria.nome}`}
+                          title="Excluir categoria"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                              d="M6.75 7.5H17.25M10 10.5V16.5M14 10.5V16.5M9 7.5L9.5 5.5C9.64 4.96 10.11 4.5 10.69 4.5H13.31C13.89 4.5 14.36 4.96 14.5 5.5L15 7.5M18 7.5L17.3 18.09C17.26 18.73 16.73 19.25 16.09 19.25H7.91C7.27 19.25 6.74 18.73 6.7 18.09L6 7.5H18Z"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         </button>
                       </div>
                     </td>

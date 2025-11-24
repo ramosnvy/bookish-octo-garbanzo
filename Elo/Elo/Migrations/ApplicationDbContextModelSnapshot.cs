@@ -36,6 +36,9 @@ namespace Elo.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("ContaReceberId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -76,9 +79,9 @@ namespace Elo.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmpresaId");
-
                     b.HasIndex("FornecedorId");
+
+                    b.HasIndex("EmpresaId", "ContaReceberId");
 
                     b.ToTable("ContasPagar");
                 });
@@ -382,7 +385,7 @@ namespace Elo.Migrations
                     b.ToTable("FornecedorCategorias");
                 });
 
-            modelBuilder.Entity("Elo.Domain.Entities.Implantacao", b =>
+            modelBuilder.Entity("Elo.Domain.Entities.Historia", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -412,6 +415,9 @@ namespace Elo.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Tipo")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -426,10 +432,10 @@ namespace Elo.Migrations
 
                     b.HasIndex("UsuarioResponsavelId");
 
-                    b.ToTable("Implantacoes");
+                    b.ToTable("Historias");
                 });
 
-            modelBuilder.Entity("Elo.Domain.Entities.Movimentacao", b =>
+            modelBuilder.Entity("Elo.Domain.Entities.HistoriaMovimentacao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -440,7 +446,7 @@ namespace Elo.Migrations
                     b.Property<DateTime>("DataMovimentacao")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ImplantacaoId")
+                    b.Property<int>("HistoriaId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Observacoes")
@@ -458,11 +464,11 @@ namespace Elo.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImplantacaoId");
+                    b.HasIndex("HistoriaId");
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Movimentacoes");
+                    b.ToTable("HistoriaMovimentacoes");
                 });
 
             modelBuilder.Entity("Elo.Domain.Entities.Pessoa", b =>
@@ -501,6 +507,16 @@ namespace Elo.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("PrazoPagamentoDias")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("ServicoPagamentoTipo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -904,16 +920,16 @@ namespace Elo.Migrations
                     b.Navigation("Empresa");
                 });
 
-            modelBuilder.Entity("Elo.Domain.Entities.Implantacao", b =>
+            modelBuilder.Entity("Elo.Domain.Entities.Historia", b =>
                 {
                     b.HasOne("Elo.Domain.Entities.Pessoa", "Cliente")
-                        .WithMany("Implantacoes")
+                        .WithMany("Historias")
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Elo.Domain.Entities.Produto", "Produto")
-                        .WithMany("Implantacoes")
+                        .WithMany("Historias")
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -931,11 +947,11 @@ namespace Elo.Migrations
                     b.Navigation("UsuarioResponsavel");
                 });
 
-            modelBuilder.Entity("Elo.Domain.Entities.Movimentacao", b =>
+            modelBuilder.Entity("Elo.Domain.Entities.HistoriaMovimentacao", b =>
                 {
-                    b.HasOne("Elo.Domain.Entities.Implantacao", "Implantacao")
+                    b.HasOne("Elo.Domain.Entities.Historia", "Historia")
                         .WithMany("Movimentacoes")
-                        .HasForeignKey("ImplantacaoId")
+                        .HasForeignKey("HistoriaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -945,7 +961,7 @@ namespace Elo.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Implantacao");
+                    b.Navigation("Historia");
 
                     b.Navigation("Usuario");
                 });
@@ -1079,7 +1095,7 @@ namespace Elo.Migrations
                     b.Navigation("Pessoas");
                 });
 
-            modelBuilder.Entity("Elo.Domain.Entities.Implantacao", b =>
+            modelBuilder.Entity("Elo.Domain.Entities.Historia", b =>
                 {
                     b.Navigation("Movimentacoes");
                 });
@@ -1092,7 +1108,7 @@ namespace Elo.Migrations
 
                     b.Navigation("Enderecos");
 
-                    b.Navigation("Implantacoes");
+                    b.Navigation("Historias");
 
                     b.Navigation("ProdutosFornecidos");
 
@@ -1101,7 +1117,7 @@ namespace Elo.Migrations
 
             modelBuilder.Entity("Elo.Domain.Entities.Produto", b =>
                 {
-                    b.Navigation("Implantacoes");
+                    b.Navigation("Historias");
 
                     b.Navigation("Modulos");
                 });

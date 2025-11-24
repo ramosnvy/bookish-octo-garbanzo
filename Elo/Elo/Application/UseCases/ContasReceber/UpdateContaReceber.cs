@@ -58,6 +58,7 @@ public static class UpdateContaReceber
             conta.DataRecebimento = normalizedDataRecebimento;
             conta.Status = request.Dto.Status;
             conta.FormaPagamento = request.Dto.FormaPagamento;
+            conta.IsRecorrente = false;
             conta.UpdatedAt = DateTime.UtcNow;
 
             var parcelas = (await _unitOfWork.ContaReceberParcelas.FindAsync(p => p.ContaReceberId == conta.Id)).ToList();
@@ -92,7 +93,7 @@ public static class UpdateContaReceber
                 DataRecebimento = conta.DataRecebimento,
                 Status = conta.Status,
                 FormaPagamento = conta.FormaPagamento,
-                IsRecorrente = conta.IsRecorrente,
+                IsRecorrente = false,
                 TotalParcelas = conta.TotalParcelas,
                 IntervaloDias = conta.IntervaloDias,
                 CreatedAt = conta.CreatedAt,

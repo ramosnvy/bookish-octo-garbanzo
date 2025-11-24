@@ -5,6 +5,7 @@ import {
   FornecedorCategoriaDto,
   FornecedorDto,
   FornecedorEnderecoInput,
+  FornecedorPagamentoTipo,
 } from "../models";
 import { FornecedorService } from "../services/FornecedorService";
 import { FornecedorCategoriaService } from "../services/FornecedorCategoriaService";
@@ -53,19 +54,29 @@ const novoEndereco = (): FornecedorEnderecoInput => ({
   complemento: "",
 });
 
+const pagamentoOptions: { value: FornecedorPagamentoTipo; label: string }[] = [
+  { value: "PRE", label: "Pré-pago" },
+  { value: "POS", label: "Pós-pago" },
+];
+
+const createFornecedorForm = (categoriaId?: number): CreateFornecedorRequest => ({
+  nome: "",
+  cnpj: "",
+  email: "",
+  telefone: "",
+  categoriaId: categoriaId ?? 0,
+  status: 1,
+  enderecos: [novoEndereco()],
+  tipoPagamento: "PRE",
+  prazoPagamentoDias: 0,
+});
+
 const FornecedoresPage = () => {
   const { selectedEmpresaId, user } = useAuth();
   const [fornecedores, setFornecedores] = useState<FornecedorDto[]>([]);
   const [categorias, setCategorias] = useState<FornecedorCategoriaDto[]>([]);
-  const [form, setForm] = useState<CreateFornecedorRequest>({
-    nome: "",
-    cnpj: "",
-    email: "",
-    telefone: "",
-    categoriaId: 0,
-    status: 1,
-    enderecos: [novoEndereco()],
-  });
+  const [form, setForm] = useState<CreateFornecedorRequest>(createFornecedorForm());
+  const [prazoInput, setPrazoInput] = useState<string>("0");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<number | "all">("all");
   const [categoriaFilter, setCategoriaFilter] = useState<number | "all">("all");
@@ -111,6 +122,11 @@ const FornecedoresPage = () => {
     if (isGlobalAdmin) {
       return;
     }
+    const prazoNumerico = form.tipoPagamento === "POS" ? Number(prazoInput || "0") : 0;
+    if (form.tipoPagamento === "POS" && (!prazoNumerico || prazoNumerico <= 0)) {
+      alert("Informe o prazo (em dias) para fornecedores pós-pagos.");
+      return;
+    }
     if (!form.categoriaId) {
       alert("Selecione uma categoria antes de salvar.");
       return;
@@ -118,6 +134,7 @@ const FornecedoresPage = () => {
     const enderecosValidos = form.enderecos.filter((endereco) => endereco.logradouro.trim().length > 0);
     const payload: CreateFornecedorRequest = {
       ...form,
+      prazoPagamentoDias: prazoNumerico,
       enderecos: enderecosValidos.length ? enderecosValidos : [novoEndereco()],
     };
 
@@ -129,15 +146,8 @@ const FornecedoresPage = () => {
       setFornecedores((prev) => [...prev, novo]);
     }
 
-    setForm({
-      nome: "",
-      cnpj: "",
-      email: "",
-      telefone: "",
-      categoriaId: categorias[0]?.id ?? 0,
-      status: 1,
-      enderecos: [novoEndereco()],
-    });
+    setForm(createFornecedorForm(categorias[0]?.id ?? 0));
+    setPrazoInput("0");
     setEditingId(null);
     setModalOpen(false);
   };
@@ -147,15 +157,8 @@ const FornecedoresPage = () => {
       return;
     }
     setEditingId(null);
-    setForm({
-      nome: "",
-      cnpj: "",
-      email: "",
-      telefone: "",
-      categoriaId: categorias[0]?.id ?? 0,
-      status: 1,
-      enderecos: [novoEndereco()],
-    });
+    setForm(createFornecedorForm(categorias[0]?.id ?? 0));
+    setPrazoInput("0");
     setModalOpen(true);
   };
 
@@ -171,6 +174,8 @@ const FornecedoresPage = () => {
       telefone: fornecedor.telefone,
       categoriaId: fornecedor.categoriaId ?? categorias[0]?.id ?? 0,
       status: normalizeStatusValue(fornecedor.status),
+      tipoPagamento: fornecedor.tipoPagamento ?? "PRE",
+      prazoPagamentoDias: fornecedor.prazoPagamentoDias ?? 0,
       enderecos: fornecedor.enderecos.length
         ? fornecedor.enderecos.map((endereco) => ({
             logradouro: endereco.logradouro,
@@ -183,6 +188,7 @@ const FornecedoresPage = () => {
           }))
         : [novoEndereco()],
     });
+    setPrazoInput(String(fornecedor.prazoPagamentoDias ?? 0));
     setModalOpen(true);
   };
 
@@ -261,6 +267,7 @@ const FornecedoresPage = () => {
               <th>Fornecedor</th>
               <th>Contato</th>
               <th>Categoria</th>
+              <th>Pagamento</th>
               <th>Status</th>
               <th>Ações</th>
             </tr>
@@ -268,7 +275,7 @@ const FornecedoresPage = () => {
           <tbody>
             {filteredFornecedores.length === 0 ? (
               <tr>
-                <td colSpan={5}>Nenhum fornecedor encontrado.</td>
+                <td colSpan={6}>Nenhum fornecedor encontrado.</td>
               </tr>
             ) : (
               filteredFornecedores.map((fornecedor) => {
@@ -286,18 +293,42 @@ const FornecedoresPage = () => {
                     </td>
                     <td>{fornecedor.categoriaNome || "-"}</td>
                     <td>
+                      {fornecedor.tipoPagamento === "POS"
+                        ? `Pós-pago (${fornecedor.prazoPagamentoDias} dias)`
+                        : "Pré-pago"}
+                    </td>
+                    <td>
                       <span className={`badge ${info.badge}`}>{info.label}</span>
                     </td>
                     <td>
                       <div className="table-actions">
-                        {!isGlobalAdmin && (
-                          <button className="ghost" onClick={() => handleOpenEdit(fornecedor)}>
-                            Editar
+                        {!isGlobalAdmin ? (
+                          <>
+                            <button
+                              className="ghost primary icon-only"
+                              onClick={() => handleOpenEdit(fornecedor)}
+                              aria-label={`Editar ${fornecedor.nome}`}
+                              title="Editar"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M7 17L5 19V15L15.5 4.5C16.0523 3.94772 16.9477 3.94772 17.5 4.5L19.5 6.5C20.0523 7.05228 20.0523 7.94772 19.5 8.5L9 19H7Z"
+                                  stroke="currentColor"
+                                  strokeWidth="1.6"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </button>
+                            <button className="ghost" onClick={() => setSelectedFornecedor(fornecedor)}>
+                              Endereços
+                            </button>
+                          </>
+                        ) : (
+                          <button className="ghost" onClick={() => setSelectedFornecedor(fornecedor)}>
+                            Visualizar
                           </button>
                         )}
-                        <button className="ghost" onClick={() => setSelectedFornecedor(fornecedor)}>
-                          Endereços
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -347,6 +378,53 @@ const FornecedoresPage = () => {
                     </option>
                   ))}
                 </select>
+                <div className="form-row">
+                  <label className="form-field">
+                    <span className="form-label">Pagamento dos serviços</span>
+                    <div className="select-wrapper">
+                      <select
+                        value={form.tipoPagamento}
+                        onChange={(event) =>
+                          setForm({
+                            ...form,
+                            tipoPagamento: event.target.value as FornecedorPagamentoTipo,
+                            prazoPagamentoDias:
+                              event.target.value === "PRE" ? 0 : form.prazoPagamentoDias,
+                          })
+                        }
+                      >
+                        {pagamentoOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </label>
+                  <label className="form-field">
+                    <span className="form-label">Prazo (dias)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.tipoPagamento === "PRE" ? "0" : prazoInput}
+                      onChange={(event) => {
+                        const raw = event.target.value;
+                        setPrazoInput(raw);
+                        setForm({
+                          ...form,
+                          prazoPagamentoDias: raw === "" ? 0 : Number(raw) || 0,
+                        });
+                      }}
+                      disabled={form.tipoPagamento === "PRE"}
+                      required={form.tipoPagamento === "POS"}
+                    />
+                    <span className="input-hint">
+                      {form.tipoPagamento === "POS"
+                        ? "Dias entre a prestação do serviço e o pagamento."
+                        : "Pré-pago: pagamento imediato."}
+                    </span>
+                  </label>
+                </div>
                 <div className="addresses-group">
                   <div className="addresses-header">
                     <h4>Endereços</h4>
@@ -399,8 +477,22 @@ const FornecedoresPage = () => {
                         />
                       </div>
                       {form.enderecos.length > 1 && (
-                        <button type="button" className="ghost full" onClick={() => removeAddress(index)}>
-                          Remover
+                        <button
+                          type="button"
+                          className="ghost icon-only danger"
+                          onClick={() => removeAddress(index)}
+                          aria-label="Remover endereço"
+                          title="Remover endereço"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                              d="M6.75 7.5H17.25M10 10.5V16.5M14 10.5V16.5M9 7.5L9.5 5.5C9.64 4.96 10.11 4.5 10.69 4.5H13.31C13.89 4.5 14.36 4.96 14.5 5.5L15 7.5M18 7.5L17.3 18.09C17.26 18.73 16.73 19.25 16.09 19.25H7.91C7.27 19.25 6.74 18.73 6.7 18.09L6 7.5H18Z"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
                         </button>
                       )}
                     </div>
@@ -429,6 +521,12 @@ const FornecedoresPage = () => {
               </button>
             </header>
             <div className="modal-content addresses-view">
+              <p>
+                Pagamento:{" "}
+                {selectedFornecedor.tipoPagamento === "POS"
+                  ? `Pós-pago (${selectedFornecedor.prazoPagamentoDias} dias)`
+                  : "Pré-pago"}
+              </p>
               {selectedFornecedor.enderecos.length === 0 ? (
                 <p className="muted">Nenhum endereço cadastrado para este fornecedor.</p>
               ) : (

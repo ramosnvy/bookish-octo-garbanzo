@@ -19,6 +19,6 @@ public class Produto
     public virtual Empresa Empresa { get; set; } = null!;
 
     // Navigation properties
-    public virtual ICollection<Implantacao> Implantacoes { get; set; } = new List<Implantacao>();
+    public virtual ICollection<Historia> Historias { get; set; } = new List<Historia>();
     public virtual ICollection<ProdutoModulo> Modulos { get; set; } = new List<ProdutoModulo>();
 }

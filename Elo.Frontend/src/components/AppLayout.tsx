@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { EmpresaService } from "../services/EmpresaService";
@@ -16,9 +16,10 @@ interface NavItem {
   icon: JSX.Element;
   to: string;
   disabled?: boolean;
-  children?: NavItem[];
   roles?: string[];
   requiresGlobalAdmin?: boolean;
+  group: string;
+  children?: NavItem[];
 }
 
 const IconDashboard = () => (
@@ -77,68 +78,55 @@ const IconFinance = () => (
   </svg>
 );
 
+const IconBoard = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <rect x="3" y="4" width="6" height="16" rx="2" />
+    <rect x="11" y="4" width="5" height="10" rx="2" />
+    <rect x="17" y="4" width="4" height="7" rx="1.6" />
+  </svg>
+);
+
 const navItems: NavItem[] = [
-  { label: "Painel", icon: <IconDashboard />, to: "/" },
-  { label: "Clientes", icon: <IconClients />, to: "/clientes" },
+  { group: "Geral", label: "Painel", icon: <IconDashboard />, to: "/" },
+  { group: "Cadastros", label: "Clientes", icon: <IconClients />, to: "/clientes" },
   {
-    label: "Produtos",
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <rect x="4" y="4" width="16" height="6" rx="2" />
-        <rect x="4" y="14" width="16" height="6" rx="2" />
-        <path d="M9 4v16" />
-      </svg>
-    ),
-    to: "/produtos",
-  },
-  {
+    group: "Cadastros",
     label: "Fornecedores",
     icon: <IconSuppliers />,
     to: "/fornecedores",
     children: [
-      {
-        label: "Categorias",
-        icon: <IconCategories />,
-        to: "/fornecedores/categorias",
-      },
+      { group: "Cadastros", label: "Cadastrar", icon: <IconSuppliers />, to: "/fornecedores" },
+      { group: "Cadastros", label: "Categorias", icon: <IconCategories />, to: "/fornecedores/categorias" },
     ],
   },
   {
+    group: "Cadastros",
+    label: "Financeiro",
+    icon: <IconFinance />,
+    to: "/financeiro",
+  },
+  {
+    group: "Gestão",
     label: "Usuários",
     icon: <IconUsers />,
     to: "/usuarios",
     roles: ["admin", "manager"],
   },
   {
+    group: "Gestão",
+    label: "Histórias",
+    icon: <IconBoard />,
+    to: "/historias",
+  },
+  {
+    group: "Gestão",
     label: "Empresas",
     icon: <IconUsers />,
     to: "/empresas",
     roles: ["admin"],
     requiresGlobalAdmin: true,
   },
-  {
-    label: "Financeiro",
-    icon: <IconFinance />,
-    to: "/financeiro/contas-pagar",
-    children: [
-      { label: "Contas a pagar", icon: <IconFinance />, to: "/financeiro/contas-pagar" },
-      { label: "Contas a receber", icon: <IconFinance />, to: "/financeiro/contas-receber" },
-    ],
-  },
 ];
-
-const getInitialExpanded = (): Record<string, boolean> => {
-  if (typeof window === "undefined") {
-    return {};
-  }
-
-  try {
-    const stored = window.localStorage.getItem("sidebar:expanded");
-    return stored ? (JSON.parse(stored) as Record<string, boolean>) : {};
-  } catch {
-    return {};
-  }
-};
 
 const UserIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1d4ed8" strokeWidth="1.8">
@@ -147,14 +135,22 @@ const UserIcon = () => (
   </svg>
 );
 
-const AppLayout = ({ children, actions }: AppLayoutProps) => {
+const AppLayout = ({ title, subtitle, children, actions }: AppLayoutProps) => {
   const location = useLocation();
   const { user, logout, selectedEmpresaId, setSelectedEmpresaId } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedParents, setExpandedParents] = useState<Record<string, boolean>>(getInitialExpanded);
   const [empresas, setEmpresas] = useState<EmpresaDto[]>([]);
+  const groupedNav = useMemo(() => {
+    const order: string[] = [];
+    const groups: Record<string, NavItem[]> = {};
+    navItems.forEach((item) => {
+      if (!order.includes(item.group)) order.push(item.group);
+      groups[item.group] = groups[item.group] ? [...groups[item.group], item] : [item];
+    });
+    return order.map((group) => ({ group, items: groups[group] }));
+  }, []);
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
   const closeMenu = () => setMenuOpen(false);
@@ -172,26 +168,6 @@ const AppLayout = ({ children, actions }: AppLayoutProps) => {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem("sidebar:expanded", JSON.stringify(expandedParents));
-    } catch {
-      // ignore storage errors
-    }
-  }, [expandedParents]);
-
-  useEffect(() => {
-    navItems.forEach((item) => {
-      if (item.children && item.children.some((child) => location.pathname.startsWith(child.to))) {
-        setExpandedParents((prev) => (prev[item.label] ? prev : { ...prev, [item.label]: true }));
-      }
-    });
-  }, [location.pathname]);
-
   return (
     <div className={`app-shell ${sidebarCollapsed ? "collapsed" : ""} ${mobileMenuOpen ? "mobile-menu-open" : ""}`}>
       {mobileMenuOpen && <div className="sidebar-overlay" onClick={closeMobileMenu} />}
@@ -208,65 +184,55 @@ const AppLayout = ({ children, actions }: AppLayoutProps) => {
           )}
         </button>
         <nav className="nav">
-          {navItems.map((item) => {
-            if (item.roles && !item.roles.includes(normalizedRole)) {
-              return null;
-            }
-            if (item.requiresGlobalAdmin && user?.empresaId) {
-              return null;
-            }
-            const isParentActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
-            return (
-              <div key={item.label} className="nav-group">
-                <div className="nav-parent">
-                  <Link
-                    to={item.disabled ? "#" : item.to}
-                    className={`nav-link ${isParentActive ? "active" : ""} ${item.disabled ? "disabled" : ""}`}
-                    onClick={closeMobileMenu}
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-label">{item.label}</span>
-                  </Link>
-                  {item.children && (
-                    <button
-                      type="button"
-                      className={`collapse-toggle ${expandedParents[item.label] ? "open" : ""}`}
-                      onClick={() =>
-                        setExpandedParents((prev) => ({
-                          ...prev,
-                          [item.label]: !prev[item.label],
-                        }))
-                      }
-                      aria-label="Alternar filhos"
+          {groupedNav.map(({ group, items }) => (
+            <div key={group} className="nav-section">
+              <div className="nav-section-label">{group}</div>
+              {items.map((item) => {
+                if (item.roles && !item.roles.includes(normalizedRole)) {
+                  return null;
+                }
+                if (item.requiresGlobalAdmin && user?.empresaId) {
+                  return null;
+                }
+                const isActive =
+                  location.pathname === item.to ||
+                  location.pathname.startsWith(`${item.to}/`) ||
+                  (item.children && item.children.some((child) => location.pathname.startsWith(child.to)));
+                const hasChildren = Boolean(item.children && item.children.length);
+                return (
+                  <div key={item.label} className="nav-group">
+                    <Link
+                      to={item.disabled ? "#" : item.to}
+                      className={`nav-link ${isActive ? "active" : ""} ${item.disabled ? "disabled" : ""}`}
+                      onClick={closeMobileMenu}
                     >
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#1d4ed8" strokeWidth="2">
-                        <path d="M7 9l5 5 5-5" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                {item.children && expandedParents[item.label] && (
-                  <div className="nav-sub">
-                    {item.children
-                      .filter((child) => !child.roles || child.roles.includes(normalizedRole))
-                      .map((child) => (
-                        <Link
-                          key={child.label}
-                          to={child.disabled ? "#" : child.to}
-                          className={`nav-link child ${
-                            location.pathname === child.to ? "active" : ""
-                          } ${child.disabled ? "disabled" : ""}`}
-                          onClick={closeMobileMenu}
-                        >
-                          <span className="nav-icon">{child.icon}</span>
-                          <span className="nav-label">{child.label}</span>
-                        </Link>
-                      ))}
+                      <span className="nav-icon">{item.icon}</span>
+                      <span className="nav-label">{item.label}</span>
+                    </Link>
+                    {hasChildren && (
+                      <div className="nav-sub">
+                        {item.children
+                          ?.filter((child) => !child.roles || child.roles.includes(normalizedRole))
+                          .map((child) => (
+                            <Link
+                              key={child.label}
+                              to={child.disabled ? "#" : child.to}
+                              className={`nav-link child ${
+                                location.pathname === child.to ? "active" : ""
+                              } ${child.disabled ? "disabled" : ""}`}
+                              onClick={closeMobileMenu}
+                            >
+                              <span className="nav-icon">{child.icon}</span>
+                              <span className="nav-label">{child.label}</span>
+                            </Link>
+                          ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          ))}
         </nav>
       </aside>
 
@@ -284,7 +250,6 @@ const AppLayout = ({ children, actions }: AppLayoutProps) => {
             )}
           </button>
           <div className="topbar-actions">
-            {actions}
             {!user?.empresaId && (
               <div className="company-filter">
                 <label htmlFor="company-filter-select">Empresa</label>
@@ -318,14 +283,15 @@ const AppLayout = ({ children, actions }: AppLayoutProps) => {
               )}
               <div className={`user-menu ${menuOpen ? "visible" : ""}`}>
                 <button type="button" className="ghost full" onClick={closeMenu}>
-                  {user?.role ? `Perfil ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½ ${user.role}` : "Perfil"}
+                  <span>Perfil</span>
+                  {user?.role && <span className="user-role-badge">{user.role}</span>}
                 </button>
                 <button type="button" className="ghost full">
                   Alterar tema
                 </button>
                 {normalizedRole === "admin" && (
                   <button type="button" className="ghost full">
-                    PermissÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½es
+                    Permissões
                   </button>
                 )}
                 <button type="button" className="danger full" onClick={logout}>
@@ -335,7 +301,18 @@ const AppLayout = ({ children, actions }: AppLayoutProps) => {
             </div>
           </div>
         </header>
-        <div className="content">{children}</div>
+        <div className="content">
+          {(title || subtitle) && (
+            <div className="page-header">
+              <div className="page-header-text">
+                <h1>{title}</h1>
+                {subtitle && <p className="page-subtitle">{subtitle}</p>}
+              </div>
+              {actions && <div className="page-header-actions">{actions}</div>}
+            </div>
+          )}
+          {children}
+        </div>
       </main>
     </div>
   );

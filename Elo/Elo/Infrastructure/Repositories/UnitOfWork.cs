@@ -18,8 +18,8 @@ public class UnitOfWork : IUnitOfWork
         Pessoas = new Repository<Pessoa>(_context);
         Produtos = new Repository<Produto>(_context);
         ProdutoModulos = new Repository<ProdutoModulo>(_context);
-        Implantacoes = new Repository<Implantacao>(_context);
-        Movimentacoes = new Repository<Movimentacao>(_context);
+        Historias = new Repository<Historia>(_context);
+        HistoriaMovimentacoes = new Repository<HistoriaMovimentacao>(_context);
         Tickets = new Repository<Ticket>(_context);
         RespostasTicket = new Repository<RespostaTicket>(_context);
         ContasReceber = new Repository<ContaReceber>(_context);
@@ -37,8 +37,8 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Pessoa> Pessoas { get; }
     public IRepository<Produto> Produtos { get; }
     public IRepository<ProdutoModulo> ProdutoModulos { get; }
-    public IRepository<Implantacao> Implantacoes { get; }
-    public IRepository<Movimentacao> Movimentacoes { get; }
+    public IRepository<Historia> Historias { get; }
+    public IRepository<HistoriaMovimentacao> HistoriaMovimentacoes { get; }
     public IRepository<Ticket> Tickets { get; }
     public IRepository<RespostaTicket> RespostasTicket { get; }
     public IRepository<ContaReceber> ContasReceber { get; }
