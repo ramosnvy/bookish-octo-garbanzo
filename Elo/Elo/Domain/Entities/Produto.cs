@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Elo.Domain.Enums;
 
 namespace Elo.Domain.Entities;
@@ -21,4 +22,5 @@ public class Produto
     // Navigation properties
     public virtual ICollection<Historia> Historias { get; set; } = new List<Historia>();
     public virtual ICollection<ProdutoModulo> Modulos { get; set; } = new List<ProdutoModulo>();
+    public virtual ICollection<HistoriaProduto> HistoriaProdutos { get; set; } = new List<HistoriaProduto>();
 }

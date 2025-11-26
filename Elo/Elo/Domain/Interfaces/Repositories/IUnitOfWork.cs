@@ -10,6 +10,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<Produto> Produtos { get; }
     IRepository<ProdutoModulo> ProdutoModulos { get; }
     IRepository<Historia> Historias { get; }
+    IRepository<HistoriaProduto> HistoriaProdutos { get; }
     IRepository<HistoriaMovimentacao> HistoriaMovimentacoes { get; }
     IRepository<Ticket> Tickets { get; }
     IRepository<RespostaTicket> RespostasTicket { get; }

@@ -56,6 +56,7 @@ public static class UpdateTicket
             ticket.Descricao = dto.Descricao;
             ticket.Tipo = dto.Tipo;
             ticket.Prioridade = dto.Prioridade;
+            ticket.NumeroExterno = dto.NumeroExterno;
             ticket.Status = dto.Status;
             ticket.UsuarioAtribuidoId = dto.UsuarioAtribuidoId;
             ticket.DataFechamento = dto.DataFechamento;

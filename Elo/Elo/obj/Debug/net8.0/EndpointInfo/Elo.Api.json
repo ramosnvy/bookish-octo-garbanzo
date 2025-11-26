@@ -1687,6 +1687,16 @@
         "tags": [
           "Historias"
         ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1790,6 +1800,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "requestBody": {
@@ -1847,6 +1865,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
         "responses": {
@@ -1866,6 +1892,14 @@
             "name": "id",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -3633,10 +3667,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "produtoId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "status": {
             "$ref": "#/components/schemas/HistoriaStatus"
           },
@@ -3659,6 +3689,13 @@
           },
           "observacoes": {
             "type": "string",
+            "nullable": true
+          },
+          "produtos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoriaProdutoInputDto"
+            },
             "nullable": true
           }
         },
@@ -3754,6 +3791,10 @@
           "usuarioAtribuidoId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "numeroExterno": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -4050,6 +4091,13 @@
               "$ref": "#/components/schemas/HistoriaMovimentacaoDto"
             },
             "nullable": true
+          },
+          "produtos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoriaProdutoDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -4085,6 +4133,53 @@
           },
           "observacoes": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoriaProdutoDto": {
+        "type": "object",
+        "properties": {
+          "produtoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "produtoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "produtoModuloIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "produtoModuloNomes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoriaProdutoInputDto": {
+        "type": "object",
+        "properties": {
+          "produtoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "produtoModuloIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
             "nullable": true
           }
         },
@@ -4390,6 +4485,10 @@
           },
           "status": {
             "$ref": "#/components/schemas/TicketStatus"
+          },
+          "numeroExterno": {
+            "type": "string",
+            "nullable": true
           },
           "usuarioAtribuidoId": {
             "type": "integer",
@@ -4720,10 +4819,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "produtoId": {
-            "type": "integer",
-            "format": "int32"
-          },
           "status": {
             "$ref": "#/components/schemas/HistoriaStatus"
           },
@@ -4746,6 +4841,13 @@
           },
           "observacoes": {
             "type": "string",
+            "nullable": true
+          },
+          "produtos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoriaProdutoInputDto"
+            },
             "nullable": true
           },
           "id": {
@@ -4823,6 +4925,10 @@
           "usuarioAtribuidoId": {
             "type": "integer",
             "format": "int32",
+            "nullable": true
+          },
+          "numeroExterno": {
+            "type": "string",
             "nullable": true
           },
           "id": {

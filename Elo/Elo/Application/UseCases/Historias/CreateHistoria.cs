@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using MediatR;
 using Elo.Application.DTOs.Historia;
 using Elo.Domain.Entities;
@@ -34,31 +36,69 @@ public static class CreateHistoria
                 throw new KeyNotFoundException("Cliente não encontrado para esta empresa.");
             }
 
-            var produto = await _unitOfWork.Produtos.GetByIdAsync(dto.ProdutoId);
-            if (produto == null || produto.EmpresaId != request.EmpresaId)
-            {
-                throw new KeyNotFoundException("Produto não encontrado para esta empresa.");
-            }
-
             var responsavel = await _unitOfWork.Users.GetByIdAsync(dto.UsuarioResponsavelId);
             if (responsavel == null || (!request.IsGlobalAdmin && responsavel.EmpresaId != request.EmpresaId))
             {
                 throw new KeyNotFoundException("Usuário responsável não encontrado para esta empresa.");
             }
 
-            var status = dto.Status;
+            var selecoes = dto.Produtos?.Where(p => p != null).ToList() ?? new List<HistoriaProdutoInputDto>();
+            if (!selecoes.Any())
+            {
+                throw new InvalidOperationException("Selecione ao menos um produto para cadastrar a história.");
+            }
 
+            var historiaProdutos = new List<HistoriaProduto>();
+            foreach (var selecao in selecoes)
+            {
+                var produto = await _unitOfWork.Produtos.GetByIdAsync(selecao.ProdutoId);
+                if (produto == null || produto.EmpresaId != request.EmpresaId)
+                {
+                    throw new KeyNotFoundException("Produto não encontrado para esta empresa.");
+                }
+
+                var moduloIds = (selecao.ProdutoModuloIds ?? Enumerable.Empty<int>())
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList();
+
+                if (moduloIds.Any())
+                {
+                    var modulos = await _unitOfWork.ProdutoModulos.FindAsync(m => moduloIds.Contains(m.Id));
+                    var validModuloIds = modulos
+                        .Where(m => m.ProdutoId == selecao.ProdutoId)
+                        .Select(m => m.Id)
+                        .Distinct()
+                        .ToList();
+
+                    if (validModuloIds.Count != moduloIds.Count)
+                    {
+                        throw new KeyNotFoundException("Módulo não encontrado para o produto informado.");
+                    }
+
+                    moduloIds = validModuloIds;
+                }
+
+                historiaProdutos.Add(new HistoriaProduto
+                {
+                    ProdutoId = selecao.ProdutoId,
+                    ProdutoModuloIds = moduloIds
+                });
+            }
+
+            var status = dto.Status;
             var historia = new Historia
             {
                 ClienteId = dto.ClienteId,
-                ProdutoId = dto.ProdutoId,
+                ProdutoId = historiaProdutos.First().ProdutoId,
                 Status = status,
                 Tipo = dto.Tipo,
                 UsuarioResponsavelId = dto.UsuarioResponsavelId,
-                DataInicio = dto.DataInicio ?? DateTime.UtcNow,
-                DataFinalizacao = dto.DataFinalizacao,
+                DataInicio = NormalizeToUtc(dto.DataInicio ?? DateTime.UtcNow),
+                DataFinalizacao = NormalizeToUtc(dto.DataFinalizacao),
                 Observacoes = dto.Observacoes,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Produtos = historiaProdutos
             };
 
             await _unitOfWork.Historias.AddAsync(historia);
@@ -78,15 +118,34 @@ public static class CreateHistoria
             return await BuildDtoAsync(historia);
         }
 
+        private static DateTime NormalizeToUtc(DateTime value)
+        {
+            return value.Kind switch
+            {
+                DateTimeKind.Utc => value,
+                DateTimeKind.Local => value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+            };
+        }
+
+        private static DateTime? NormalizeToUtc(DateTime? value) => value.HasValue ? NormalizeToUtc(value.Value) : null;
+
         private async Task<HistoriaDto> BuildDtoAsync(Historia historia)
         {
             var clientes = await _unitOfWork.Pessoas.FindAsync(p => p.Id == historia.ClienteId);
-            var produtos = await _unitOfWork.Produtos.FindAsync(p => p.Id == historia.ProdutoId);
+            var produtoIds = historia.Produtos.Select(p => p.ProdutoId).Append(historia.ProdutoId).Distinct().ToList();
+            var produtos = await _unitOfWork.Produtos.FindAsync(p => produtoIds.Contains(p.Id));
             var responsaveis = await _unitOfWork.Users.FindAsync(u => u.Id == historia.UsuarioResponsavelId);
             var movimentos = await _unitOfWork.HistoriaMovimentacoes.FindAsync(m => m.HistoriaId == historia.Id);
+            var historiaProdutos = await _unitOfWork.HistoriaProdutos.FindAsync(hp => hp.HistoriaId == historia.Id);
+            var moduloIds = historiaProdutos.SelectMany(hp => hp.ProdutoModuloIds).Distinct().ToList();
+            var modulos = moduloIds.Any()
+                ? await _unitOfWork.ProdutoModulos.FindAsync(m => moduloIds.Contains(m.Id))
+                : Enumerable.Empty<ProdutoModulo>();
 
             var clienteLookup = clientes.ToDictionary(c => c.Id, c => c);
             var produtoLookup = produtos.ToDictionary(p => p.Id, p => p);
+            var moduloLookup = modulos.ToDictionary(m => m.Id, m => m);
             var usuarioIds = movimentos.Select(m => m.UsuarioId).Append(historia.UsuarioResponsavelId).Distinct().ToList();
             var usuarios = await _unitOfWork.Users.FindAsync(u => usuarioIds.Contains(u.Id));
             var usuarioLookup = usuarios.ToDictionary(u => u.Id, u => u);
@@ -94,8 +153,19 @@ public static class CreateHistoria
             {
                 { historia.Id, movimentos.ToList() }
             };
+            var produtosLookup = new Dictionary<int, List<HistoriaProduto>>
+            {
+                { historia.Id, historiaProdutos.ToList() }
+            };
 
-            return HistoriaMapper.ToDto(historia, clienteLookup, produtoLookup, usuarioLookup, movimentosLookup);
+            return HistoriaMapper.ToDto(
+                historia,
+                clienteLookup,
+                produtoLookup,
+                moduloLookup,
+                usuarioLookup,
+                produtosLookup,
+                movimentosLookup);
         }
     }
 }

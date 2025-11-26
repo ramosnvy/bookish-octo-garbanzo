@@ -63,8 +63,43 @@ const badgeTone: Record<HistoriaStatus, string> = {
   [HistoriaStatus.Cancelada]: "#dc2626",
 };
 
+const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+const statusIcons: Record<HistoriaStatus, JSX.Element> = {
+  [HistoriaStatus.Pendente]: (
+    <svg viewBox="0 0 24 24" className="status-icon soft">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  ),
+  [HistoriaStatus.EmAndamento]: (
+    <svg viewBox="0 0 24 24" className="status-icon work">
+      <path d="M4 12h16M8 6h8M8 18h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="6" cy="12" r="2" fill="currentColor" />
+    </svg>
+  ),
+  [HistoriaStatus.Pausada]: (
+    <svg viewBox="0 0 24 24" className="status-icon pause">
+      <path d="M10 6h2v12h-2zM14 6h2v12h-2z" fill="currentColor" />
+    </svg>
+  ),
+  [HistoriaStatus.Concluida]: (
+    <svg viewBox="0 0 24 24" className="status-icon done">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+      <path d="M8 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  [HistoriaStatus.Cancelada]: (
+    <svg viewBox="0 0 24 24" className="status-icon cancel">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+      <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  ),
+};
+
 const HistoriasPage = () => {
   const { selectedEmpresaId } = useAuth();
+  const empresaIdParam = selectedEmpresaId ?? undefined;
   const [historias, setHistorias] = useState<HistoriaDto[]>([]);
   const [clientes, setClientes] = useState<ClienteDto[]>([]);
   const [produtos, setProdutos] = useState<ProdutoDto[]>([]);
@@ -75,6 +110,7 @@ const HistoriasPage = () => {
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<HistoriaDto | null>(null);
+  const [dragOverStatus, setDragOverStatus] = useState<HistoriaStatus | null>(null);
   const [form, setForm] = useState<FormState>({
     clienteId: 0,
     usuarioResponsavelId: 0,
@@ -144,6 +180,23 @@ const HistoriasPage = () => {
 
   const openEdit = (historia: HistoriaDto) => {
     setEditing(historia);
+    const produtosVinculados =
+      historia.produtos && historia.produtos.length > 0
+        ? historia.produtos
+        : [
+            {
+              produtoId: historia.produtoId,
+              produtoNome: historia.produtoNome,
+              produtoModuloIds: [],
+              produtoModuloNomes: [],
+            },
+          ];
+    const modulosPreenchidos = produtosVinculados.reduce<Record<number, number[]>>((acc, produto) => {
+      if (produto.produtoModuloIds && produto.produtoModuloIds.length > 0) {
+        acc[produto.produtoId] = produto.produtoModuloIds;
+      }
+      return acc;
+    }, {});
     setForm({
       id: historia.id,
       clienteId: historia.clienteId,
@@ -153,8 +206,8 @@ const HistoriasPage = () => {
       dataInicio: historia.dataInicio?.slice(0, 10),
       dataFinalizacao: historia.dataFinalizacao?.slice(0, 10) ?? "",
       observacoes: historia.observacoes ?? "",
-      produtosSelecionados: [historia.produtoId],
-      modulosSelecionados: {},
+      produtosSelecionados: produtosVinculados.map((p) => p.produtoId),
+      modulosSelecionados: modulosPreenchidos,
     });
     setShowModal(true);
   };
@@ -164,23 +217,26 @@ const HistoriasPage = () => {
     if (!form.clienteId || form.produtosSelecionados.length === 0 || !form.usuarioResponsavelId) return;
     setSaving(true);
     try {
-      const produtoId = form.produtosSelecionados[0]; // API atual aceita um produto por história
+      const produtosPayload = form.produtosSelecionados.map((produtoId) => ({
+        produtoId,
+        produtoModuloIds: form.modulosSelecionados[produtoId] ?? [],
+      }));
       const payload: CreateHistoriaRequest = {
         clienteId: form.clienteId,
-        produtoId,
         usuarioResponsavelId: form.usuarioResponsavelId,
         status: form.status,
         tipo: form.tipo,
         dataInicio: form.dataInicio || null,
         dataFinalizacao: form.dataFinalizacao || null,
         observacoes: form.observacoes || null,
+        produtos: produtosPayload,
       };
       let result: HistoriaDto;
       if (form.id) {
         const updatePayload: UpdateHistoriaRequest = { ...payload, id: form.id };
-        result = await HistoriaService.update(form.id, updatePayload);
+        result = await HistoriaService.update(form.id, updatePayload, empresaIdParam);
       } else {
-        result = await HistoriaService.create(payload);
+        result = await HistoriaService.create(payload, empresaIdParam);
       }
       setHistorias((prev) => {
         const exists = prev.some((h) => h.id === result.id);
@@ -200,17 +256,41 @@ const HistoriasPage = () => {
     if (historia.status === novoStatus) return;
     setSaving(true);
     try {
-      const updated = await HistoriaService.adicionarMovimentacao(historia.id, { statusNovo: novoStatus });
+      const updated = await HistoriaService.adicionarMovimentacao(
+        historia.id,
+        { statusNovo: novoStatus },
+        empresaIdParam
+      );
       setHistorias((prev) => prev.map((h) => (h.id === updated.id ? updated : h)));
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Deseja remover esta história?")) return;
-    await HistoriaService.remove(id);
-    setHistorias((prev) => prev.filter((h) => h.id !== id));
+  const handleDragStart = (historiaId: number) => (event: React.DragEvent<HTMLDivElement>) => {
+    event.dataTransfer.setData("text/plain", historiaId.toString());
+    event.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => setDragOverStatus(null);
+
+  const handleDragOverColumn = (status: HistoriaStatus) => (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOverStatus(status);
+  };
+
+  const handleDragLeaveColumn = () => setDragOverStatus(null);
+
+  const handleDropOnColumn = (status: HistoriaStatus) => async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOverStatus(null);
+    const idValue = event.dataTransfer.getData("text/plain");
+    const id = Number(idValue);
+    if (!idValue || Number.isNaN(id)) return;
+    const historia = historias.find((h) => h.id === id);
+    if (historia && historia.status !== status) {
+      await handleStatusChange(historia, status);
+    }
   };
 
   const historiasFiltradas = useMemo(() => {
@@ -232,25 +312,80 @@ const HistoriasPage = () => {
     return produtos.filter((p) => p.nome.toLowerCase().includes(termo));
   }, [produtoBusca, produtos]);
 
+  const produtosSelecionadosLista = useMemo(
+    () => produtos.filter((p) => form.produtosSelecionados.includes(p.id)),
+    [produtos, form.produtosSelecionados]
+  );
+
+  const modulosSelecionadosTotal = useMemo(() => {
+    return produtosSelecionadosLista.reduce((total, produto) => {
+      const selecionados = form.modulosSelecionados[produto.id] ?? [];
+      return total + selecionados.length;
+    }, 0);
+  }, [produtosSelecionadosLista, form.modulosSelecionados]);
+
+  const toggleProdutoSelecionado = (produtoId: number, selecionado: boolean) => {
+    setForm((prev) => {
+      const selecionados = new Set(prev.produtosSelecionados);
+      if (selecionado) {
+        selecionados.add(produtoId);
+      } else {
+        selecionados.delete(produtoId);
+      }
+
+      const { [produtoId]: _, ...restante } = prev.modulosSelecionados;
+
+      return {
+        ...prev,
+        produtosSelecionados: Array.from(selecionados),
+        modulosSelecionados: selecionado ? prev.modulosSelecionados : restante,
+      };
+    });
+  };
+
+  const limparSelecaoProdutos = () => {
+    setForm((prev) => ({
+      ...prev,
+      produtosSelecionados: [],
+      modulosSelecionados: {},
+    }));
+  };
+
   const renderCard = (historia: HistoriaDto) => {
     const ultimaMov: HistoriaMovimentacaoDto | undefined = historia.movimentacoes?.[0];
     const responsavel = historia.usuarioResponsavelNome || "Sem responsável";
     return (
-      <div className="kanban-card">
+      <div
+        className="kanban-card"
+        draggable
+        onDragStart={handleDragStart(historia.id)}
+        onDragEnd={handleDragEnd}
+      >
         <div className="kanban-card-header">
           <div className="kanban-pill" style={{ backgroundColor: badgeTone[historia.status] }}>
             {statusLabels[historia.status]}
           </div>
-          <button className="ghost small danger icon-only" onClick={() => handleDelete(historia.id)} title="Remover">
-            ×
-          </button>
         </div>
         <div className="kanban-title">{tipoLabels[historia.tipo]}</div>
         <div className="kanban-meta">
           <strong>Cliente:</strong> {historia.clienteNome}
         </div>
-        <div className="kanban-meta">
-          <strong>Produto:</strong> {historia.produtoNome}
+        <div className="kanban-meta kanban-products">
+          <strong>Produtos:</strong>
+          {historia.produtos.length === 0 ? (
+            <span className="muted">Sem produtos vinculados</span>
+          ) : (
+            <ul className="kanban-product-list">
+              {historia.produtos.map((produto) => (
+                <li key={`${historia.id}-${produto.produtoId}`}>
+                  <span>{produto.produtoNome}</span>
+                  {produto.produtoModuloNomes.length > 0 && (
+                    <span className="kanban-product-modules">{produto.produtoModuloNomes.join(", ")}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="kanban-meta">
           <strong>Responsável:</strong> {responsavel}
@@ -266,16 +401,6 @@ const HistoriasPage = () => {
           </div>
         )}
         <div className="kanban-actions">
-          <select
-            value={historia.status}
-            onChange={(e) => handleStatusChange(historia, Number(e.target.value) as HistoriaStatus)}
-          >
-            {statusOrder.map((s) => (
-              <option key={s} value={s}>
-                {statusLabels[s]}
-              </option>
-            ))}
-          </select>
           <button className="ghost small" onClick={() => openEdit(historia)}>
             Editar
           </button>
@@ -314,10 +439,17 @@ const HistoriasPage = () => {
           {columns.map((col) => (
             <div key={col.status} className="kanban-column">
               <div className="kanban-column-header">
-                <span className="kanban-column-title">{statusLabels[col.status]}</span>
+                <span className="kanban-column-title">
+                  {statusIcons[col.status]} {statusLabels[col.status]}
+                </span>
                 <span className="kanban-count">{col.items.length}</span>
               </div>
-              <div className="kanban-column-body">
+              <div
+                className={`kanban-column-body ${dragOverStatus === col.status ? "is-drag-over" : ""}`}
+                onDragOver={handleDragOverColumn(col.status)}
+                onDrop={handleDropOnColumn(col.status)}
+                onDragLeave={handleDragLeaveColumn}
+              >
                 {col.items.length === 0 ? (
                   <div className="kanban-empty">Nenhuma história aqui.</div>
                 ) : (
@@ -359,128 +491,7 @@ const HistoriasPage = () => {
                       ))}
                     </select>
                   </label>
-                  <label className="form-field form-field--full historia-field">
-                    <div className="historia-field-head">
-                      <div>
-                        <div className="field-label-strong">Produtos (múltipla seleção)</div>
-                        <p className="input-subtitle">Escolha um ou mais produtos para vincular a história</p>
-                      </div>
-                      <span className="pill-badge ghosty">Vincule produtos</span>
-                    </div>
-                    <div className="historia-panel">
-                      <div className="product-filter">
-                        <div className="product-search-wrapper">
-                          <svg viewBox="0 0 20 20" aria-hidden="true">
-                            <path
-                              d="M14.5 13.5l3 3M9.5 15a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.4"
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                          <input
-                            type="search"
-                            className="product-search"
-                            placeholder="Buscar produto por nome"
-                            value={produtoBusca}
-                            onChange={(e) => setProdutoBusca(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="product-list">
-                        {produtosFiltrados.length === 0 ? (
-                          <div className="product-empty">Nenhum produto encontrado para “{produtoBusca}”.</div>
-                        ) : (
-                          <div className="product-grid">
-                            {produtosFiltrados.map((p) => {
-                              const selecionado = form.produtosSelecionados.includes(p.id);
-                              const modulosCount = p.modulos?.length ?? 0;
-                              return (
-                                <label key={p.id} className={`product-card ${selecionado ? "is-selected" : ""}`}>
-                                  <input
-                                    type="checkbox"
-                                    checked={selecionado}
-                                    onChange={(e) =>
-                                      setForm((prev) => {
-                                        const selected = new Set(prev.produtosSelecionados);
-                                        if (e.target.checked) selected.add(p.id);
-                                        else selected.delete(p.id);
-                                        return { ...prev, produtosSelecionados: Array.from(selected) };
-                                      })
-                                    }
-                                  />
-                                  <div className="product-check">
-                                    <span className="product-check-icon">✓</span>
-                                  </div>
-                                  <div className="product-card-body">
-                                    <div className="product-card-top">
-                                      <span className="product-name">{p.nome}</span>
-                                      <span className="pill-badge">{selecionado ? "Selecionado" : "Disponível"}</span>
-                                    </div>
-                                    <div className="product-meta">
-                                      <span className="product-chip strong">
-                                        {modulosCount} módulo{modulosCount === 1 ? "" : "s"}
-                                      </span>
-                                      {p.fornecedorNome && <span className="product-chip alt">{p.fornecedorNome}</span>}
-                                    </div>
-                                  </div>
-                                </label>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </label>
                 </div>
-                {form.produtosSelecionados.length > 0 && (
-                  <div className="form-row">
-                    <label className="form-field form-field--full">
-                      Módulos dos produtos selecionados
-                      <p className="input-subtitle">Selecione os módulos que farão parte desta implementação</p>
-                      <div className="historia-panel muted">
-                        <div className="module-groups">
-                          {produtos
-                            .filter((p) => form.produtosSelecionados.includes(p.id))
-                            .map((p) => (
-                              <div key={p.id} className="module-group">
-                                <div className="module-group-title">{p.nome}</div>
-                                <div className="chip-grid pill-grid">
-                                  {(p.modulos ?? []).map((m) => (
-                                    <label key={`${p.id}-${m.id}`} className="chip-option pill">
-                                      <input
-                                        type="checkbox"
-                                        checked={form.modulosSelecionados[p.id]?.includes(m.id) || false}
-                                        onChange={(e) =>
-                                          setForm((prev) => {
-                                            const current = prev.modulosSelecionados[p.id] || [];
-                                            const nextSet = new Set(current);
-                                            if (e.target.checked) nextSet.add(m.id);
-                                            else nextSet.delete(m.id);
-                                            return {
-                                              ...prev,
-                                              modulosSelecionados: {
-                                                ...prev.modulosSelecionados,
-                                                [p.id]: Array.from(nextSet),
-                                              },
-                                            };
-                                          })
-                                        }
-                                      />
-                                      <span>{m.nome}</span>
-                                    </label>
-                                  ))}
-                                  {(p.modulos ?? []).length === 0 && <span className="input-hint">Nenhum módulo cadastrado para este produto.</span>}
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                        <div className="historia-info-banner">A API atual aceita apenas um produto por história; será enviado o primeiro selecionado.</div>
-                      </div>
-                    </label>
-                  </div>
-                )}
                 <div className="form-row">
                   <label className="form-field">
                     Responsável
@@ -553,6 +564,184 @@ const HistoriasPage = () => {
                     placeholder="Contexto, escopo ou detalhes importantes..."
                   />
                 </label>
+                <div className="form-row">
+                  <label className="form-field form-field--full historia-field">
+                    <div className="historia-field-head">
+                      <div>
+                        <div className="field-label-strong">Produtos (múltipla seleção)</div>
+                        <p className="input-subtitle">Escolha um ou mais produtos para vincular a história</p>
+                      </div>
+                    </div>
+                    <div className="product-search-bar">
+                      <input
+                        type="search"
+                        className="search-input product-search"
+                        placeholder="Buscar produto por nome"
+                        value={produtoBusca}
+                        onChange={(e) => setProdutoBusca(e.target.value)}
+                      />
+                    </div>
+                    <div className="historia-panel product-selector-panel">
+                      <div className="product-selector-layout">
+                        <div className="product-selector-main">
+                          <div className="product-list">
+                            {produtosFiltrados.length === 0 ? (
+                              <div className="product-empty">Nenhum produto encontrado para “{produtoBusca}”.</div>
+                            ) : (
+                              <div className="product-grid">
+                                {produtosFiltrados.map((p) => {
+                                  const selecionado = form.produtosSelecionados.includes(p.id);
+                                  const modulosCount = p.modulos?.length ?? 0;
+                                  const modulosSelecionadosProduto = form.modulosSelecionados[p.id] ?? [];
+                                  const modulosSelecionadosSet = new Set(modulosSelecionadosProduto);
+                                  return (
+                                    <label key={p.id} className={`product-card ${selecionado ? "is-selected" : ""}`}>
+                                      <input
+                                        type="checkbox"
+                                        checked={selecionado}
+                                        onChange={(e) => toggleProdutoSelecionado(p.id, e.target.checked)}
+                                      />
+                                      <div className="product-check">
+                                        <span className="product-check-icon">✓</span>
+                                      </div>
+                                      <div className="product-card-body">
+                                        <div className="product-card-top">
+                                          <div className="product-card-info">
+                                            <span className="product-name">{p.nome}</span>
+                                            {p.fornecedorNome && (
+                                              <span className="product-supplier">Fornecedor: {p.fornecedorNome}</span>
+                                            )}
+                                          </div>
+                                          <div className="product-card-meta">
+                                            <span className="product-price">{currencyFormatter.format(p.valorRevenda)}</span>
+                                            <span className="pill-badge">{selecionado ? "Selecionado" : "Disponível"}</span>
+                                          </div>
+                                        </div>
+                                        <div className="product-meta">
+                                          <span className="product-chip strong">
+                                            {modulosCount} módulo{modulosCount === 1 ? "" : "s"}
+                                          </span>
+                                          <span className="product-chip">{modulosSelecionadosProduto.length} selecionado</span>
+                                        </div>
+                                        {selecionado && (
+                                          <div className="product-modules-list">
+                                            <div className="product-modules-header">
+                                              <strong>Módulos</strong>
+                                              <span>
+                                                {modulosSelecionadosProduto.length}/{modulosCount} selecionados
+                                              </span>
+                                            </div>
+                                            {modulosCount === 0 ? (
+                                              <span className="product-module-empty">Nenhum módulo cadastrado.</span>
+                                            ) : (
+                                              <div className="product-module-grid">
+                                                {(p.modulos ?? []).map((m) => (
+                                                  <label key={`${p.id}-${m.id}`} className="module-option">
+                                                    <input
+                                                      type="checkbox"
+                                                      checked={modulosSelecionadosSet.has(m.id)}
+                                                      onChange={(e) =>
+                                                        setForm((prev) => {
+                                                          const current = prev.modulosSelecionados[p.id] || [];
+                                                          const nextSet = new Set(current);
+                                                          if (e.target.checked) nextSet.add(m.id);
+                                                          else nextSet.delete(m.id);
+                                                          return {
+                                                            ...prev,
+                                                            modulosSelecionados: {
+                                                              ...prev.modulosSelecionados,
+                                                              [p.id]: Array.from(nextSet),
+                                                            },
+                                                          };
+                                                        })
+                                                      }
+                                                    />
+                                                    <div>
+                                                      <span className="module-name">{m.nome}</span>
+                                                      <span className="module-price">
+                                                        {currencyFormatter.format(m.valorAdicional)}
+                                                      </span>
+                                                    </div>
+                                                  </label>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <aside className="product-selector-summary">
+                          <div className="summary-head">
+                            <div>
+                              <p className="summary-eyebrow">Resumo da seleção</p>
+                              <span className="summary-total">
+                                {produtosSelecionadosLista.length} produto
+                                {produtosSelecionadosLista.length === 1 ? "" : "s"}
+                              </span>
+                            </div>
+                            <span className="summary-pill">
+                              {modulosSelecionadosTotal} módulo{modulosSelecionadosTotal === 1 ? "" : "s"}
+                            </span>
+                          </div>
+                          {produtosSelecionadosLista.length === 0 ? (
+                            <p className="summary-empty">Selecione um ou mais produtos para visualizar detalhes.</p>
+                          ) : (
+                            <ul className="summary-list">
+                              {produtosSelecionadosLista.map((produto) => {
+                                const modulosSelecionadosProduto = form.modulosSelecionados[produto.id] ?? [];
+                                const modulosDoProduto = new Set(modulosSelecionadosProduto);
+                                const moduloNomes =
+                                  produto.modulos?.filter((m) => modulosDoProduto.has(m.id)).map((m) => m.nome) ?? [];
+                                return (
+                                  <li key={produto.id} className="summary-item">
+                                    <div className="summary-item-head">
+                                      <div>
+                                        <strong>{produto.nome}</strong>
+                                        <p className="summary-item-sub">
+                                          {modulosSelecionadosProduto.length} módulo
+                                          {modulosSelecionadosProduto.length === 1 ? "" : "s"} selecionado
+                                          {modulosSelecionadosProduto.length === 1 ? "" : "s"}
+                                        </p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="ghost small icon-only"
+                                        onClick={() => toggleProdutoSelecionado(produto.id, false)}
+                                        aria-label={`Remover ${produto.nome}`}
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                    <div className="summary-modules">
+                                      {moduloNomes.length === 0 ? (
+                                        <span className="summary-chip muted">Nenhum módulo selecionado</span>
+                                      ) : (
+                                        moduloNomes.map((nome) => (
+                                          <span key={nome} className="summary-chip">
+                                            {nome}
+                                          </span>
+                                        ))
+                                      )}
+                                    </div>
+                                    {produto.fornecedorNome && (
+                                      <span className="summary-supplier">Fornecedor: {produto.fornecedorNome}</span>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </aside>
+                      </div>
+                    </div>
+                  </label>
+                </div>
                 <div className="form-actions">
                   <button type="button" className="ghost" onClick={() => setShowModal(false)}>
                     Cancelar

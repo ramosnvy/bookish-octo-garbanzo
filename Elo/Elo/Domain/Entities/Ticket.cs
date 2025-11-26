@@ -11,6 +11,7 @@ public class Ticket
     public TicketTipo Tipo { get; set; }
     public TicketPrioridade Prioridade { get; set; }
     public TicketStatus Status { get; set; }
+    public string NumeroExterno { get; set; } = string.Empty;
     public int? UsuarioAtribuidoId { get; set; }
     public DateTime DataAbertura { get; set; } = DateTime.UtcNow;
     public DateTime? DataFechamento { get; set; }

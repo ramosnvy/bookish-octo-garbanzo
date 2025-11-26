@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Pessoa> Pessoas { get; set; }
     public DbSet<Produto> Produtos { get; set; }
     public DbSet<Historia> Historias { get; set; }
+    public DbSet<HistoriaProduto> HistoriaProdutos { get; set; }
     public DbSet<HistoriaMovimentacao> HistoriaMovimentacoes { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<RespostaTicket> RespostasTicket { get; set; }
@@ -168,6 +169,29 @@ public class ApplicationDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(d => d.UsuarioResponsavelId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.Produtos)
+                .WithOne(p => p.Historia)
+                .HasForeignKey(p => p.HistoriaId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<HistoriaProduto>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ProdutoModuloIds)
+                .HasColumnType("integer[]")
+                .HasDefaultValueSql("'{}'::integer[]");
+
+            entity.HasOne(e => e.Historia)
+                .WithMany(h => h.Produtos)
+                .HasForeignKey(e => e.HistoriaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Produto)
+                .WithMany(p => p.HistoriaProdutos)
+                .HasForeignKey(e => e.ProdutoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // HistoriaMovimentacao configuration
@@ -193,6 +217,7 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Titulo).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Descricao).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.NumeroExterno).HasMaxLength(60).HasDefaultValue(string.Empty);
 
             entity.HasOne(d => d.Cliente)
                 .WithMany(p => p.Tickets)

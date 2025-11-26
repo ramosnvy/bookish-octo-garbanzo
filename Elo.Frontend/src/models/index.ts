@@ -354,24 +354,111 @@ export interface HistoriaDto {
   createdAt: string;
   updatedAt?: string | null;
   movimentacoes: HistoriaMovimentacaoDto[];
+  produtos: HistoriaProdutoDto[];
 }
 
 export interface CreateHistoriaRequest {
   clienteId: number;
-  produtoId: number;
   status: HistoriaStatus;
   tipo: HistoriaTipo;
   usuarioResponsavelId: number;
   dataInicio?: string | null;
   dataFinalizacao?: string | null;
   observacoes?: string | null;
+  produtos: HistoriaProdutoInputDto[];
 }
 
 export interface UpdateHistoriaRequest extends CreateHistoriaRequest {
   id: number;
 }
 
+export interface HistoriaProdutoDto {
+  produtoId: number;
+  produtoNome: string;
+  produtoModuloIds: number[];
+  produtoModuloNomes: string[];
+}
+
+export interface HistoriaProdutoInputDto {
+  produtoId: number;
+  produtoModuloIds: number[];
+}
+
 export interface CreateHistoriaMovimentacaoRequest {
   statusNovo: HistoriaStatus;
   observacoes?: string | null;
+}
+
+export enum TicketStatus {
+  Aberto = 1,
+  EmAndamento = 2,
+  PendenteCliente = 3,
+  Resolvido = 4,
+  Fechado = 5,
+  Cancelado = 6,
+}
+
+export enum TicketTipo {
+  Suporte = 1,
+  Bug = 2,
+  Melhoria = 3,
+  Duvida = 4,
+  Incidente = 5,
+}
+
+export enum TicketPrioridade {
+  Baixa = 1,
+  Media = 2,
+  Alta = 3,
+  Critica = 4,
+}
+
+export interface RespostaTicketDto {
+  id: number;
+  ticketId: number;
+  usuarioId: number;
+  usuarioNome: string;
+  mensagem: string;
+  dataResposta: string;
+  isInterna: boolean;
+}
+
+export interface TicketDto {
+  id: number;
+  clienteId: number;
+  clienteNome: string;
+  titulo: string;
+  descricao: string;
+  tipo: TicketTipo;
+  prioridade: TicketPrioridade;
+  status: TicketStatus;
+  usuarioAtribuidoId?: number | null;
+  usuarioAtribuidoNome?: string | null;
+  dataAbertura: string;
+  dataFechamento?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+  numeroExterno: string;
+  respostas: RespostaTicketDto[];
+}
+
+export interface CreateTicketRequest {
+  clienteId: number;
+  titulo: string;
+  descricao: string;
+  tipo: TicketTipo;
+  prioridade: TicketPrioridade;
+  status: TicketStatus;
+  usuarioAtribuidoId?: number | null;
+  numeroExterno?: string;
+}
+
+export interface UpdateTicketRequest extends CreateTicketRequest {
+  id: number;
+  dataFechamento?: string | null;
+}
+
+export interface CreateRespostaTicketRequest {
+  mensagem: string;
+  isInterna: boolean;
 }

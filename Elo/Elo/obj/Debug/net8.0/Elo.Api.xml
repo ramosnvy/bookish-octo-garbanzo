@@ -178,5 +178,17 @@
         <member name="M:Elo.Migrations.RenameImplantacaoParaHistoria.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:Elo.Migrations.AddHistoriaProdutos">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddHistoriaProdutos.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddHistoriaProdutos.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:Elo.Migrations.AddHistoriaProdutos.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>

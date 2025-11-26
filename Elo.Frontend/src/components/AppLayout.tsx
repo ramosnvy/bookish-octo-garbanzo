@@ -86,6 +86,24 @@ const IconBoard = () => (
   </svg>
 );
 
+const IconTickets = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M4 7h16" />
+    <path d="M4 17h16" />
+    <circle cx="8" cy="12" r="1.5" />
+    <circle cx="12" cy="12" r="1.5" />
+    <circle cx="16" cy="12" r="1.5" />
+  </svg>
+);
+
+const IconProducts = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <rect x="4" y="5" width="16" height="4" rx="1" />
+    <rect x="4" y="11" width="16" height="4" rx="1" />
+    <path d="M6 17h12" />
+  </svg>
+);
+
 const navItems: NavItem[] = [
   { group: "Geral", label: "Painel", icon: <IconDashboard />, to: "/" },
   { group: "Cadastros", label: "Clientes", icon: <IconClients />, to: "/clientes" },
@@ -98,6 +116,12 @@ const navItems: NavItem[] = [
       { group: "Cadastros", label: "Cadastrar", icon: <IconSuppliers />, to: "/fornecedores" },
       { group: "Cadastros", label: "Categorias", icon: <IconCategories />, to: "/fornecedores/categorias" },
     ],
+  },
+  {
+    group: "Cadastros",
+    label: "Produtos",
+    icon: <IconProducts />,
+    to: "/produtos",
   },
   {
     group: "Cadastros",
@@ -117,6 +141,12 @@ const navItems: NavItem[] = [
     label: "Histórias",
     icon: <IconBoard />,
     to: "/historias",
+  },
+  {
+    group: "Gestão",
+    label: "Tickets",
+    icon: <IconTickets />,
+    to: "/tickets",
   },
   {
     group: "Gestão",

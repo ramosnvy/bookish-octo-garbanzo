@@ -66,7 +66,7 @@ public class HistoriasController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<HistoriaDto>> Create([FromBody] CreateHistoriaDto dto)
+    public async Task<ActionResult<HistoriaDto>> Create([FromBody] CreateHistoriaDto dto, [FromQuery] int? empresaId)
     {
         var userId = GetUserId();
         if (!userId.HasValue)
@@ -74,10 +74,10 @@ public class HistoriasController : ControllerBase
             return Unauthorized();
         }
 
-        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
+        var resolvedEmpresaId = await _empresaContext.RequireEmpresaAsync(empresaId, HttpContext.RequestAborted);
         var command = new CreateHistoria.Command
         {
-            EmpresaId = empresaId,
+            EmpresaId = resolvedEmpresaId,
             Dto = dto,
             RequesterUserId = userId.Value,
             IsGlobalAdmin = _empresaContext.IsGlobalAdmin
@@ -88,7 +88,7 @@ public class HistoriasController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<HistoriaDto>> Update(int id, [FromBody] UpdateHistoriaDto dto)
+    public async Task<ActionResult<HistoriaDto>> Update(int id, [FromBody] UpdateHistoriaDto dto, [FromQuery] int? empresaId)
     {
         if (dto.Id != 0 && dto.Id != id)
         {
@@ -103,10 +103,10 @@ public class HistoriasController : ControllerBase
 
         dto.Id = id;
 
-        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
+        var resolvedEmpresaId = await _empresaContext.RequireEmpresaAsync(empresaId, HttpContext.RequestAborted);
         var command = new UpdateHistoria.Command
         {
-            EmpresaId = empresaId,
+            EmpresaId = resolvedEmpresaId,
             Dto = dto,
             RequesterUserId = userId.Value,
             IsGlobalAdmin = _empresaContext.IsGlobalAdmin
@@ -117,16 +117,16 @@ public class HistoriasController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> Delete(int id, [FromQuery] int? empresaId)
     {
-        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
-        var command = new DeleteHistoria.Command { Id = id, EmpresaId = empresaId };
+        var resolvedEmpresaId = await _empresaContext.RequireEmpresaAsync(empresaId, HttpContext.RequestAborted);
+        var command = new DeleteHistoria.Command { Id = id, EmpresaId = resolvedEmpresaId };
         await _mediator.Send(command);
         return NoContent();
     }
 
     [HttpPost("{id}/movimentacoes")]
-    public async Task<ActionResult<HistoriaDto>> AddMovimentacao(int id, [FromBody] CreateHistoriaMovimentacaoDto dto)
+    public async Task<ActionResult<HistoriaDto>> AddMovimentacao(int id, [FromBody] CreateHistoriaMovimentacaoDto dto, [FromQuery] int? empresaId)
     {
         var userId = GetUserId();
         if (!userId.HasValue)
@@ -134,11 +134,11 @@ public class HistoriasController : ControllerBase
             return Unauthorized();
         }
 
-        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
+        var resolvedEmpresaId = await _empresaContext.RequireEmpresaAsync(empresaId, HttpContext.RequestAborted);
         var command = new AddHistoriaMovimentacao.Command
         {
             HistoriaId = id,
-            EmpresaId = empresaId,
+            EmpresaId = resolvedEmpresaId,
             UsuarioId = userId.Value,
             Dto = dto
         };

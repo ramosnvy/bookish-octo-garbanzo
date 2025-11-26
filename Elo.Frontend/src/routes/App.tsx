@@ -10,6 +10,7 @@ import EmpresasPage from "../pages/EmpresasPage";
 import FinanceiroPage from "../pages/FinanceiroPage";
 import FornecedorCategoriasPage from "../pages/FornecedorCategoriasPage";
 import HistoriasPage from "../pages/HistoriasPage";
+import TicketsPage from "../pages/TicketsPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 const App = () => (
@@ -61,6 +62,14 @@ const App = () => (
         element={
           <ProtectedRoute>
             <HistoriasPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tickets"
+        element={
+          <ProtectedRoute>
+            <TicketsPage />
           </ProtectedRoute>
         }
       />

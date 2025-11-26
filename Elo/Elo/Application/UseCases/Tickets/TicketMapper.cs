@@ -47,6 +47,7 @@ internal static class TicketMapper
             Tipo = ticket.Tipo,
             Prioridade = ticket.Prioridade,
             Status = ticket.Status,
+            NumeroExterno = ticket.NumeroExterno,
             UsuarioAtribuidoId = ticket.UsuarioAtribuidoId,
             UsuarioAtribuidoNome = usuarioAtribuido?.Nome,
             DataAbertura = ticket.DataAbertura,

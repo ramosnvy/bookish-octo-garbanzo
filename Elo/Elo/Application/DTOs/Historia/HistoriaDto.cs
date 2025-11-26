@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Elo.Domain.Enums;
 
 namespace Elo.Application.DTOs.Historia;
@@ -19,23 +21,38 @@ public class HistoriaDto
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public IEnumerable<HistoriaMovimentacaoDto> Movimentacoes { get; set; } = Enumerable.Empty<HistoriaMovimentacaoDto>();
+    public IEnumerable<HistoriaProdutoDto> Produtos { get; set; } = Enumerable.Empty<HistoriaProdutoDto>();
 }
 
 public class CreateHistoriaDto
 {
     public int ClienteId { get; set; }
-    public int ProdutoId { get; set; }
     public HistoriaStatus Status { get; set; } = HistoriaStatus.Pendente;
     public HistoriaTipo Tipo { get; set; } = HistoriaTipo.Projeto;
     public int UsuarioResponsavelId { get; set; }
     public DateTime? DataInicio { get; set; }
     public DateTime? DataFinalizacao { get; set; }
     public string? Observacoes { get; set; }
+    public IEnumerable<HistoriaProdutoInputDto> Produtos { get; set; } = Enumerable.Empty<HistoriaProdutoInputDto>();
 }
 
 public class UpdateHistoriaDto : CreateHistoriaDto
 {
     public int Id { get; set; }
+}
+
+public class HistoriaProdutoDto
+{
+    public int ProdutoId { get; set; }
+    public string ProdutoNome { get; set; } = string.Empty;
+    public IEnumerable<int> ProdutoModuloIds { get; set; } = Enumerable.Empty<int>();
+    public IEnumerable<string> ProdutoModuloNomes { get; set; } = Enumerable.Empty<string>();
+}
+
+public class HistoriaProdutoInputDto
+{
+    public int ProdutoId { get; set; }
+    public IEnumerable<int> ProdutoModuloIds { get; set; } = Enumerable.Empty<int>();
 }
 
 public class HistoriaMovimentacaoDto

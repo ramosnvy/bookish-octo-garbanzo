@@ -50,6 +50,7 @@ public static class CreateTicket
                 Tipo = dto.Tipo,
                 Prioridade = dto.Prioridade,
                 Status = dto.Status,
+                NumeroExterno = dto.NumeroExterno,
                 UsuarioAtribuidoId = dto.UsuarioAtribuidoId,
                 DataAbertura = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow

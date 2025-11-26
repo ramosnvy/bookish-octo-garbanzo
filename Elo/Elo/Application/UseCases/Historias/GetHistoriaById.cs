@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using MediatR;
 using Elo.Application.DTOs.Historia;
 using Elo.Domain.Entities;
@@ -41,9 +43,17 @@ public static class GetHistoriaById
                 return null;
             }
 
-            var produto = await _unitOfWork.Produtos.GetByIdAsync(historia.ProdutoId);
-            var movimentos = await _unitOfWork.HistoriaMovimentacoes.FindAsync(m => m.HistoriaId == historia.Id);
+            var historiaProdutos = await _unitOfWork.HistoriaProdutos.FindAsync(hp => hp.HistoriaId == historia.Id);
+            var produtoIds = historiaProdutos.Select(p => p.ProdutoId).Append(historia.ProdutoId).Distinct().ToList();
+            var produtos = produtoIds.Any()
+                ? await _unitOfWork.Produtos.FindAsync(p => produtoIds.Contains(p.Id))
+                : Enumerable.Empty<Produto>();
+            var moduloIds = historiaProdutos.SelectMany(p => p.ProdutoModuloIds).Distinct().ToList();
+            var modulos = moduloIds.Any()
+                ? await _unitOfWork.ProdutoModulos.FindAsync(m => moduloIds.Contains(m.Id))
+                : Enumerable.Empty<ProdutoModulo>();
 
+            var movimentos = await _unitOfWork.HistoriaMovimentacoes.FindAsync(m => m.HistoriaId == historia.Id);
             var usuarioIds = movimentos.Select(m => m.UsuarioId)
                 .Append(historia.UsuarioResponsavelId)
                 .Distinct()
@@ -51,14 +61,26 @@ public static class GetHistoriaById
             var usuarios = await _unitOfWork.Users.FindAsync(u => usuarioIds.Contains(u.Id));
 
             var clienteLookup = new Dictionary<int, Pessoa> { { cliente.Id, cliente } };
-            var produtoLookup = produto != null ? new Dictionary<int, Produto> { { produto.Id, produto } } : new Dictionary<int, Produto>();
+            var produtoLookup = produtos.ToDictionary(p => p.Id, p => p);
+            var moduloLookup = modulos.ToDictionary(m => m.Id, m => m);
             var usuarioLookup = usuarios.ToDictionary(u => u.Id, u => u);
             var movimentosLookup = new Dictionary<int, List<HistoriaMovimentacao>>
             {
                 { historia.Id, movimentos.ToList() }
             };
+            var produtosLookup = new Dictionary<int, List<HistoriaProduto>>
+            {
+                { historia.Id, historiaProdutos.ToList() }
+            };
 
-            return HistoriaMapper.ToDto(historia, clienteLookup, produtoLookup, usuarioLookup, movimentosLookup);
+            return HistoriaMapper.ToDto(
+                historia,
+                clienteLookup,
+                produtoLookup,
+                moduloLookup,
+                usuarioLookup,
+                produtosLookup,
+                movimentosLookup);
         }
     }
 }

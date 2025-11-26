@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Elo.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bbb6683c04a1f3d26108356f0fb77ae70deb4954")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10c11931ccb719b0c82d62de08f0d665778b0f6b")]
 [assembly: System.Reflection.AssemblyProductAttribute("Elo.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Elo.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

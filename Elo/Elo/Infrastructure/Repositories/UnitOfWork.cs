@@ -20,6 +20,7 @@ public class UnitOfWork : IUnitOfWork
         ProdutoModulos = new Repository<ProdutoModulo>(_context);
         Historias = new Repository<Historia>(_context);
         HistoriaMovimentacoes = new Repository<HistoriaMovimentacao>(_context);
+        HistoriaProdutos = new Repository<HistoriaProduto>(_context);
         Tickets = new Repository<Ticket>(_context);
         RespostasTicket = new Repository<RespostaTicket>(_context);
         ContasReceber = new Repository<ContaReceber>(_context);
@@ -39,6 +40,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<ProdutoModulo> ProdutoModulos { get; }
     public IRepository<Historia> Historias { get; }
     public IRepository<HistoriaMovimentacao> HistoriaMovimentacoes { get; }
+    public IRepository<HistoriaProduto> HistoriaProdutos { get; }
     public IRepository<Ticket> Tickets { get; }
     public IRepository<RespostaTicket> RespostasTicket { get; }
     public IRepository<ContaReceber> ContasReceber { get; }
