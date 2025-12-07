@@ -1589,17 +1589,19 @@
         ],
         "parameters": [
           {
-            "name": "status",
+            "name": "statusId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/HistoriaStatus"
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
-            "name": "tipo",
+            "name": "tipoId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/HistoriaTipo"
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
@@ -1733,6 +1735,101 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HistoriaDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Historias/kanban": {
+      "get": {
+        "tags": [
+          "Historias"
+        ],
+        "parameters": [
+          {
+            "name": "statusId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "tipoId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "clienteId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "produtoId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "usuarioResponsavelId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "dataInicio",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "dataFim",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaKanbanDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaKanbanDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaKanbanDto"
                 }
               }
             }
@@ -1945,6 +2042,406 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/historia-status": {
+      "get": {
+        "tags": [
+          "HistoriaStatus"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoriaStatusDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoriaStatusDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoriaStatusDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "HistoriaStatus"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHistoriaStatusDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHistoriaStatusDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHistoriaStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaStatusDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaStatusDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaStatusDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/historia-status/{id}": {
+      "put": {
+        "tags": [
+          "HistoriaStatus"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHistoriaStatusDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHistoriaStatusDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHistoriaStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaStatusDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaStatusDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaStatusDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "HistoriaStatus"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/historia-tipos": {
+      "get": {
+        "tags": [
+          "HistoriaTipos"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoriaTipoDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoriaTipoDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoriaTipoDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "HistoriaTipos"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHistoriaTipoDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHistoriaTipoDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHistoriaTipoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaTipoDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaTipoDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaTipoDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/historia-tipos/{id}": {
+      "put": {
+        "tags": [
+          "HistoriaTipos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHistoriaTipoDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHistoriaTipoDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHistoriaTipoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaTipoDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaTipoDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoriaTipoDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "HistoriaTipos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -2280,10 +2777,11 @@
             }
           },
           {
-            "name": "tipo",
+            "name": "tipoId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/TicketTipo"
+              "type": "integer",
+              "format": "int32"
             }
           },
           {
@@ -2295,6 +2793,22 @@
           },
           {
             "name": "clienteId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "produtoId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "fornecedorId",
             "in": "query",
             "schema": {
               "type": "integer",
@@ -2594,6 +3108,265 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/Tickets/{id}/anexos": {
+      "post": {
+        "tags": [
+          "Tickets"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ticket-tipos": {
+      "get": {
+        "tags": [
+          "TicketTipos"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketTipoDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketTipoDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketTipoDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TicketTipos"
+        ],
+        "parameters": [
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketTipoDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketTipoDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketTipoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTipoDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTipoDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTipoDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ticket-tipos/{id}": {
+      "put": {
+        "tags": [
+          "TicketTipos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketTipoDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketTipoDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketTipoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTipoDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTipoDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketTipoDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TicketTipos"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "empresaId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -3667,24 +4440,22 @@
             "type": "integer",
             "format": "int32"
           },
-          "status": {
-            "$ref": "#/components/schemas/HistoriaStatus"
-          },
-          "tipo": {
-            "$ref": "#/components/schemas/HistoriaTipo"
-          },
-          "usuarioResponsavelId": {
+          "statusId": {
             "type": "integer",
             "format": "int32"
           },
-          "dataInicio": {
-            "type": "string",
-            "format": "date-time",
+          "tipoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usuarioResponsavelId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
-          "dataFinalizacao": {
-            "type": "string",
-            "format": "date-time",
+          "previsaoDias": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "observacoes": {
@@ -3704,12 +4475,62 @@
       "CreateHistoriaMovimentacaoDto": {
         "type": "object",
         "properties": {
-          "statusNovo": {
-            "$ref": "#/components/schemas/HistoriaStatus"
+          "statusNovoId": {
+            "type": "integer",
+            "format": "int32"
           },
           "observacoes": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateHistoriaStatusDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaHistoria": {
+            "type": "boolean"
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateHistoriaTipoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -3771,6 +4592,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "ticketTipoId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "titulo": {
             "type": "string",
             "nullable": true
@@ -3778,9 +4603,6 @@
           "descricao": {
             "type": "string",
             "nullable": true
-          },
-          "tipo": {
-            "$ref": "#/components/schemas/TicketTipo"
           },
           "prioridade": {
             "$ref": "#/components/schemas/TicketPrioridade"
@@ -3793,9 +4615,40 @@
             "format": "int32",
             "nullable": true
           },
+          "produtoId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "fornecedorId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "numeroExterno": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTicketTipoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -4049,18 +4902,45 @@
             "type": "string",
             "nullable": true
           },
-          "status": {
-            "$ref": "#/components/schemas/HistoriaStatus"
-          },
-          "tipo": {
-            "$ref": "#/components/schemas/HistoriaTipo"
-          },
-          "usuarioResponsavelId": {
+          "statusId": {
             "type": "integer",
             "format": "int32"
           },
+          "statusNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCor": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusFechaHistoria": {
+            "type": "boolean"
+          },
+          "tipoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tipoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipoDescricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "usuarioResponsavelId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "usuarioResponsavelNome": {
             "type": "string",
+            "nullable": true
+          },
+          "previsaoDias": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "dataInicio": {
@@ -4102,6 +4982,33 @@
         },
         "additionalProperties": false
       },
+      "HistoriaKanbanDto": {
+        "type": "object",
+        "properties": {
+          "historias": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoriaDto"
+            },
+            "nullable": true
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoriaStatusDto"
+            },
+            "nullable": true
+          },
+          "tipos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoriaTipoDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "HistoriaMovimentacaoDto": {
         "type": "object",
         "properties": {
@@ -4113,11 +5020,21 @@
             "type": "integer",
             "format": "int32"
           },
-          "statusAnterior": {
-            "$ref": "#/components/schemas/HistoriaStatus"
+          "statusAnteriorId": {
+            "type": "integer",
+            "format": "int32"
           },
-          "statusNovo": {
-            "$ref": "#/components/schemas/HistoriaStatus"
+          "statusAnteriorNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusNovoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statusNovoNome": {
+            "type": "string",
+            "nullable": true
           },
           "usuarioId": {
             "type": "integer",
@@ -4185,25 +5102,80 @@
         },
         "additionalProperties": false
       },
-      "HistoriaStatus": {
-        "enum": [
-          "Pendente",
-          "EmAndamento",
-          "Concluida",
-          "Cancelada",
-          "Pausada"
-        ],
-        "type": "string"
+      "HistoriaStatusDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaHistoria": {
+            "type": "boolean"
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
-      "HistoriaTipo": {
-        "enum": [
-          "Projeto",
-          "Entrega",
-          "Operacao",
-          "Implementacao",
-          "OrdemDeServico"
-        ],
-        "type": "string"
+      "HistoriaTipoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "InitialUserDto": {
         "type": "object",
@@ -4454,6 +5426,36 @@
         ],
         "type": "string"
       },
+      "TicketAnexoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ticketId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "mimeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "tamanho": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "TicketDto": {
         "type": "object",
         "properties": {
@@ -4469,6 +5471,14 @@
             "type": "string",
             "nullable": true
           },
+          "ticketTipoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ticketTipoNome": {
+            "type": "string",
+            "nullable": true
+          },
           "titulo": {
             "type": "string",
             "nullable": true
@@ -4477,14 +5487,29 @@
             "type": "string",
             "nullable": true
           },
-          "tipo": {
-            "$ref": "#/components/schemas/TicketTipo"
-          },
           "prioridade": {
             "$ref": "#/components/schemas/TicketPrioridade"
           },
           "status": {
             "$ref": "#/components/schemas/TicketStatus"
+          },
+          "produtoId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "produtoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "fornecedorId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "fornecedorNome": {
+            "type": "string",
+            "nullable": true
           },
           "numeroExterno": {
             "type": "string",
@@ -4523,6 +5548,13 @@
               "$ref": "#/components/schemas/RespostaTicketDto"
             },
             "nullable": true
+          },
+          "anexos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketAnexoDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -4547,15 +5579,39 @@
         ],
         "type": "string"
       },
-      "TicketTipo": {
-        "enum": [
-          "Suporte",
-          "Bug",
-          "Melhoria",
-          "Duvida",
-          "Incidente"
-        ],
-        "type": "string"
+      "TicketTipoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
       },
       "UpdateClienteDto": {
         "type": "object",
@@ -4819,24 +5875,22 @@
             "type": "integer",
             "format": "int32"
           },
-          "status": {
-            "$ref": "#/components/schemas/HistoriaStatus"
-          },
-          "tipo": {
-            "$ref": "#/components/schemas/HistoriaTipo"
-          },
-          "usuarioResponsavelId": {
+          "statusId": {
             "type": "integer",
             "format": "int32"
           },
-          "dataInicio": {
-            "type": "string",
-            "format": "date-time",
+          "tipoId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usuarioResponsavelId": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
-          "dataFinalizacao": {
-            "type": "string",
-            "format": "date-time",
+          "previsaoDias": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "observacoes": {
@@ -4849,6 +5903,63 @@
               "$ref": "#/components/schemas/HistoriaProdutoInputDto"
             },
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateHistoriaStatusDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "cor": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaHistoria": {
+            "type": "boolean"
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateHistoriaTipoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
           },
           "id": {
             "type": "integer",
@@ -4905,6 +6016,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "ticketTipoId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "titulo": {
             "type": "string",
             "nullable": true
@@ -4913,9 +6028,6 @@
             "type": "string",
             "nullable": true
           },
-          "tipo": {
-            "$ref": "#/components/schemas/TicketTipo"
-          },
           "prioridade": {
             "$ref": "#/components/schemas/TicketPrioridade"
           },
@@ -4923,6 +6035,16 @@
             "$ref": "#/components/schemas/TicketStatus"
           },
           "usuarioAtribuidoId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "produtoId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "fornecedorId": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -4939,6 +6061,31 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateTicketTipoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string",
+            "nullable": true
+          },
+          "ordem": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

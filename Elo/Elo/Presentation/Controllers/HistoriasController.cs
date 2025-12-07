@@ -24,8 +24,8 @@ public class HistoriasController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HistoriaDto>>> GetAll(
-        [FromQuery] Domain.Enums.HistoriaStatus? status,
-        [FromQuery] Domain.Enums.HistoriaTipo? tipo,
+        [FromQuery] int? statusId,
+        [FromQuery] int? tipoId,
         [FromQuery] int? clienteId,
         [FromQuery] int? produtoId,
         [FromQuery] int? usuarioResponsavelId,
@@ -37,8 +37,36 @@ public class HistoriasController : ControllerBase
         var query = new GetAllHistorias.Query
         {
             EmpresaId = resolvedEmpresa,
-            Status = status,
-            Tipo = tipo,
+            StatusId = statusId,
+            TipoId = tipoId,
+            ClienteId = clienteId,
+            ProdutoId = produtoId,
+            UsuarioResponsavelId = usuarioResponsavelId,
+            DataInicio = dataInicio,
+            DataFim = dataFim
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpGet("kanban")]
+    public async Task<ActionResult<HistoriaKanbanDto>> GetKanban(
+        [FromQuery] int? statusId,
+        [FromQuery] int? tipoId,
+        [FromQuery] int? clienteId,
+        [FromQuery] int? produtoId,
+        [FromQuery] int? usuarioResponsavelId,
+        [FromQuery] DateTime? dataInicio,
+        [FromQuery] DateTime? dataFim,
+        [FromQuery] int? empresaId)
+    {
+        var resolvedEmpresa = await _empresaContext.RequireEmpresaAsync(empresaId, HttpContext.RequestAborted);
+        var query = new GetHistoriaKanban.Query
+        {
+            EmpresaId = resolvedEmpresa,
+            StatusId = statusId,
+            TipoId = tipoId,
             ClienteId = clienteId,
             ProdutoId = produtoId,
             UsuarioResponsavelId = usuarioResponsavelId,

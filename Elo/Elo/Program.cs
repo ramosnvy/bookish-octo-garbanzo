@@ -8,16 +8,16 @@ using Elo.Infrastructure.Data;
 using Elo.Infrastructure.Repositories;
 using Elo.Infrastructure.Services;
 using Elo.Infrastructure.Middleware;
-using Elo.Infrastructure.Configuration;
+using Elo.Presentation.Configuration;
 using Elo.Application.Interfaces;
 using Elo.Application.Behaviors;
 using Elo.Application.Mappers;
+using Elo.Application.UseCases.Clientes;
 using Elo.Domain.Interfaces;
 using Elo.Domain.Interfaces.Repositories;
 using Elo.Domain.Services;
 using FluentValidation;
 using MediatR;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +62,7 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IFornecedorCategoriaService, FornecedorCategoriaService>();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 builder.Services.AddScoped<IEmpresaContextService, EmpresaContextService>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 // Application Services
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -71,13 +72,14 @@ builder.Services.AddScoped<IFornecedorMapper, FornecedorMapper>();
 builder.Services.AddScoped<IProdutoMapper, ProdutoMapper>();
 
 // MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+var applicationAssembly = typeof(CreateCliente.Command).Assembly;
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
 
 // Behaviors
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 // FluentValidation
-builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+builder.Services.AddValidatorsFromAssembly(applicationAssembly);
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

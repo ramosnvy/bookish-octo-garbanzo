@@ -104,6 +104,13 @@ const IconProducts = () => (
   </svg>
 );
 
+const IconSettings = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1 1 0 0 1 .2 1.1l-0.8 1.6a1 1 0 0 1-1 .5l-1.7-.3a6.5 6.5 0 0 1-1.2.7l-0.3 1.7a1 1 0 0 1-1 .8h-1.8a1 1 0 0 1-1-.8l-0.3-1.7a6.5 6.5 0 0 1-1.2-.7l-1.7.3a1 1 0 0 1-1-.5L4.4 16a1 1 0 0 1 .2-1.1l1.4-1.1a7 7 0 0 1 0-1.6L4.6 11a1 1 0 0 1-.2-1.1L5.2 8.3a1 1 0 0 1 1-.5l1.7.3a6.5 6.5 0 0 1 1.2-.7l0.3-1.7a1 1 0 0 1 1-.8h1.8a1 1 0 0 1 1 .8l0.3 1.7a6.5 6.5 0 0 1 1.2.7l1.7-.3a1 1 0 0 1 1 .5l0.8 1.6a1 1 0 0 1-.2 1.1l-1.4 1.1a7 7 0 0 1 0 1.6Z" />
+  </svg>
+);
+
 const navItems: NavItem[] = [
   { group: "Geral", label: "Painel", icon: <IconDashboard />, to: "/" },
   { group: "Cadastros", label: "Clientes", icon: <IconClients />, to: "/clientes" },
@@ -147,6 +154,13 @@ const navItems: NavItem[] = [
     label: "Tickets",
     icon: <IconTickets />,
     to: "/tickets",
+  },
+  {
+    group: "Gestão",
+    label: "Cadastros avançados",
+    icon: <IconSettings />,
+    to: "/configuracoes",
+    roles: ["admin"],
   },
   {
     group: "Gestão",

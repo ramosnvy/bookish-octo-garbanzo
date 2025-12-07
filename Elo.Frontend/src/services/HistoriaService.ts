@@ -1,16 +1,9 @@
-import {
-  CreateHistoriaMovimentacaoRequest,
-  CreateHistoriaRequest,
-  HistoriaDto,
-  HistoriaStatus,
-  HistoriaTipo,
-  UpdateHistoriaRequest,
-} from "../models";
+import { CreateHistoriaMovimentacaoRequest, CreateHistoriaRequest, HistoriaDto, UpdateHistoriaRequest } from "../models";
 import { api } from "../api/client";
 
 export interface HistoriaFilter {
-  status?: HistoriaStatus;
-  tipo?: HistoriaTipo;
+  statusId?: number;
+  tipoId?: number;
   clienteId?: number;
   produtoId?: number;
   usuarioResponsavelId?: number;
@@ -22,30 +15,23 @@ export interface HistoriaFilter {
 const buildEmpresaConfig = (empresaId?: number | null) =>
   empresaId === undefined || empresaId === null ? undefined : { params: { empresaId } };
 
-const mapEnumValue = <T extends Record<string | number, number | string>>(
-  value: string | number,
-  enumObj: T
-) => (typeof value === "string" ? (enumObj[value as keyof T] as number | string) ?? value : value);
-
 const normalizeHistoriaDto = (historia: HistoriaDto): HistoriaDto => ({
   ...historia,
-  status: mapEnumValue(historia.status, HistoriaStatus) as HistoriaStatus,
-  tipo: mapEnumValue(historia.tipo, HistoriaTipo) as HistoriaTipo,
-  movimentacoes: historia.movimentacoes.map((mov) => ({
-    ...mov,
-    statusAnterior: mapEnumValue(mov.statusAnterior, HistoriaStatus) as HistoriaStatus,
-    statusNovo: mapEnumValue(mov.statusNovo, HistoriaStatus) as HistoriaStatus,
-  })),
+  usuarioResponsavelNome: historia.usuarioResponsavelNome ?? "",
+  movimentacoes: historia.movimentacoes ?? [],
+  produtos: historia.produtos ?? [],
 });
 
 const normalizeResponse = (dto: HistoriaDto) => normalizeHistoriaDto(dto);
 
 export const HistoriaService = {
   async getAll(filters: HistoriaFilter = {}): Promise<HistoriaDto[]> {
-    const params = { ...filters };
-    if (params.empresaId === undefined || params.empresaId === null) {
-      delete params.empresaId;
-    }
+    const params: Record<string, unknown> = { ...filters };
+    Object.keys(params).forEach((key) => {
+      if (params[key] === undefined || params[key] === null) {
+        delete params[key];
+      }
+    });
     const { data } = await api.get<HistoriaDto[]>("/historias", { params });
     return data.map(normalizeResponse);
   },

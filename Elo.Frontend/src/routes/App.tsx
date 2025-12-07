@@ -11,6 +11,7 @@ import FinanceiroPage from "../pages/FinanceiroPage";
 import FornecedorCategoriasPage from "../pages/FornecedorCategoriasPage";
 import HistoriasPage from "../pages/HistoriasPage";
 import TicketsPage from "../pages/TicketsPage";
+import ConfiguracoesCadastrosPage from "../pages/ConfiguracoesCadastrosPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 const App = () => (
@@ -94,6 +95,14 @@ const App = () => (
         element={
           <ProtectedRoute>
             <FinanceiroPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/configuracoes"
+        element={
+          <ProtectedRoute>
+            <ConfiguracoesCadastrosPage />
           </ProtectedRoute>
         }
       />

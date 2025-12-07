@@ -4,8 +4,8 @@ import {
   ClienteDto,
   HistoriaDto,
   HistoriaMovimentacaoDto,
-  HistoriaStatus,
-  HistoriaTipo,
+  HistoriaStatusConfigDto,
+  HistoriaTipoConfigDto,
   UpdateHistoriaRequest,
   CreateHistoriaRequest,
   ProdutoDto,
@@ -14,6 +14,8 @@ import { ClienteService } from "../services/ClienteService";
 import { ProdutoService } from "../services/ProdutoService";
 import { HistoriaService } from "../services/HistoriaService";
 import { UserService } from "../services/UserService";
+import { HistoriaStatusService } from "../services/HistoriaStatusService";
+import { HistoriaTipoService } from "../services/HistoriaTipoService";
 import { useAuth } from "../context/AuthContext";
 import "../components.css";
 import "../styles.css";
@@ -22,8 +24,8 @@ type FormState = {
   id?: number;
   clienteId: number;
   usuarioResponsavelId: number;
-  status: HistoriaStatus;
-  tipo: HistoriaTipo;
+  statusId: number;
+  tipoId: number;
   dataInicio?: string | null;
   dataFinalizacao?: string | null;
   observacoes?: string | null;
@@ -31,71 +33,18 @@ type FormState = {
   modulosSelecionados: Record<number, number[]>;
 };
 
-const statusOrder: HistoriaStatus[] = [
-  HistoriaStatus.Pendente,
-  HistoriaStatus.EmAndamento,
-  HistoriaStatus.Pausada,
-  HistoriaStatus.Concluida,
-  HistoriaStatus.Cancelada,
-];
-
-const statusLabels: Record<HistoriaStatus, string> = {
-  [HistoriaStatus.Pendente]: "Pendente",
-  [HistoriaStatus.EmAndamento]: "Em andamento",
-  [HistoriaStatus.Concluida]: "Concluída",
-  [HistoriaStatus.Cancelada]: "Cancelada",
-  [HistoriaStatus.Pausada]: "Pausada",
-};
-
-const tipoLabels: Record<HistoriaTipo, string> = {
-  [HistoriaTipo.Projeto]: "Projeto",
-  [HistoriaTipo.Entrega]: "Entrega",
-  [HistoriaTipo.Operacao]: "Operação",
-  [HistoriaTipo.Implementacao]: "Implementação",
-  [HistoriaTipo.OrdemDeServico]: "Ordem de Serviço",
-};
-
-const badgeTone: Record<HistoriaStatus, string> = {
-  [HistoriaStatus.Pendente]: "#f59e0b",
-  [HistoriaStatus.EmAndamento]: "#3b82f6",
-  [HistoriaStatus.Pausada]: "#8b5cf6",
-  [HistoriaStatus.Concluida]: "#16a34a",
-  [HistoriaStatus.Cancelada]: "#dc2626",
+type StatusDefinition = Pick<HistoriaStatusConfigDto, "id" | "nome" | "cor" | "ordem" | "fechaHistoria" | "ativo">;
+type TipoDefinition = Pick<HistoriaTipoConfigDto, "id" | "nome" | "descricao" | "ordem" | "ativo">;
+type KanbanColumn = {
+  statusId: number;
+  statusNome: string;
+  statusCor?: string | null;
+  items: HistoriaDto[];
 };
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
-const statusIcons: Record<HistoriaStatus, JSX.Element> = {
-  [HistoriaStatus.Pendente]: (
-    <svg viewBox="0 0 24 24" className="status-icon soft">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  ),
-  [HistoriaStatus.EmAndamento]: (
-    <svg viewBox="0 0 24 24" className="status-icon work">
-      <path d="M4 12h16M8 6h8M8 18h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="6" cy="12" r="2" fill="currentColor" />
-    </svg>
-  ),
-  [HistoriaStatus.Pausada]: (
-    <svg viewBox="0 0 24 24" className="status-icon pause">
-      <path d="M10 6h2v12h-2zM14 6h2v12h-2z" fill="currentColor" />
-    </svg>
-  ),
-  [HistoriaStatus.Concluida]: (
-    <svg viewBox="0 0 24 24" className="status-icon done">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-      <path d="M8 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  [HistoriaStatus.Cancelada]: (
-    <svg viewBox="0 0 24 24" className="status-icon cancel">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-      <path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  ),
-};
+const DEFAULT_STATUS_COLOR = "#475569";
 
 const HistoriasPage = () => {
   const { selectedEmpresaId } = useAuth();
@@ -104,25 +53,27 @@ const HistoriasPage = () => {
   const [clientes, setClientes] = useState<ClienteDto[]>([]);
   const [produtos, setProdutos] = useState<ProdutoDto[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; nome: string }[]>([]);
+  const [statusOptions, setStatusOptions] = useState<HistoriaStatusConfigDto[]>([]);
+  const [tipoOptions, setTipoOptions] = useState<HistoriaTipoConfigDto[]>([]);
   const [produtoBusca, setProdutoBusca] = useState("");
   const [loading, setLoading] = useState(false);
   const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<HistoriaDto | null>(null);
-  const [dragOverStatus, setDragOverStatus] = useState<HistoriaStatus | null>(null);
+  const [dragOverStatus, setDragOverStatus] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>({
     clienteId: 0,
     usuarioResponsavelId: 0,
-    status: HistoriaStatus.Pendente,
-    tipo: HistoriaTipo.Projeto,
+    statusId: 0,
+    tipoId: 0,
     dataInicio: "",
     dataFinalizacao: "",
     observacoes: "",
     produtosSelecionados: [],
     modulosSelecionados: {},
   });
-  const [filtroTipo, setFiltroTipo] = useState<HistoriaTipo | "todos">("todos");
+  const [filtroTipo, setFiltroTipo] = useState<number | "todos">("todos");
 
   useEffect(() => {
     if (showModal) {
@@ -138,19 +89,23 @@ const HistoriasPage = () => {
       setLoading(true);
       setErroCarregamento(null);
       try {
-        const [hist, cli, prod, usr] = await Promise.all([
+        const [hist, cli, prod, usr, statusList, tipoList] = await Promise.all([
           HistoriaService.getAll({ empresaId: selectedEmpresaId ?? undefined }),
           ClienteService.getAll(selectedEmpresaId ?? undefined),
           ProdutoService.getAll(selectedEmpresaId ?? undefined),
           UserService.getAll(selectedEmpresaId ?? undefined),
+          HistoriaStatusService.getAll(selectedEmpresaId ?? undefined),
+          HistoriaTipoService.getAll(selectedEmpresaId ?? undefined),
         ]);
         setHistorias(hist);
         setClientes(cli);
         setProdutos(prod);
         setUsuarios(usr.map((u) => ({ id: u.id, nome: u.nome })));
+        setStatusOptions(statusList);
+        setTipoOptions(tipoList);
       } catch (error) {
         console.error("Erro ao carregar dados de histórias", error);
-        setErroCarregamento("Não foi possível carregar clientes, usuários ou produtos. Verifique seu acesso/empresa.");
+        setErroCarregamento("Não foi possível carregar histórias, status ou cadastros relacionados. Verifique seu acesso/empresa.");
       } finally {
         setLoading(false);
       }
@@ -158,13 +113,71 @@ const HistoriasPage = () => {
     fetchData();
   }, [selectedEmpresaId]);
 
+  const statusDefinitions = useMemo<StatusDefinition[]>(() => {
+    const map = new Map<number, StatusDefinition>();
+    statusOptions
+      .slice()
+      .sort((a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome))
+      .forEach(({ id, nome, cor, ordem, fechaHistoria, ativo }) => {
+        map.set(id, { id, nome, cor, ordem, fechaHistoria, ativo });
+      });
+    historias.forEach((hist) => {
+      if (!map.has(hist.statusId)) {
+        map.set(hist.statusId, {
+          id: hist.statusId,
+          nome: hist.statusNome || "Sem status",
+          cor: hist.statusCor ?? null,
+          ordem: hist.statusId,
+          fechaHistoria: hist.statusFechaHistoria ?? false,
+          ativo: true,
+        });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.ordem - b.ordem || a.id - b.id);
+  }, [statusOptions, historias]);
+
+  const tipoDefinitions = useMemo<TipoDefinition[]>(() => {
+    const map = new Map<number, TipoDefinition>();
+    tipoOptions
+      .slice()
+      .sort((a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome))
+      .forEach(({ id, nome, descricao, ordem, ativo }) => {
+        map.set(id, { id, nome, descricao, ordem, ativo });
+      });
+    historias.forEach((hist) => {
+      if (!map.has(hist.tipoId)) {
+        map.set(hist.tipoId, {
+          id: hist.tipoId,
+          nome: hist.tipoNome || "Sem tipo",
+          descricao: hist.tipoDescricao ?? "",
+          ordem: hist.tipoId,
+          ativo: true,
+        });
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.ordem - b.ordem || a.id - b.id);
+  }, [tipoOptions, historias]);
+
+  const selectableStatuses = useMemo(() => statusDefinitions.filter((status) => status.ativo), [statusDefinitions]);
+  const selectableTipos = useMemo(() => tipoDefinitions.filter((tipo) => tipo.ativo), [tipoDefinitions]);
+  const statusLookup = useMemo(() => new Map(statusDefinitions.map((status) => [status.id, status])), [statusDefinitions]);
+  const tipoLookup = useMemo(() => new Map(tipoDefinitions.map((tipo) => [tipo.id, tipo])), [tipoDefinitions]);
+  const defaultStatusId = selectableStatuses[0]?.id ?? statusDefinitions[0]?.id ?? 0;
+  const defaultTipoId = selectableTipos[0]?.id ?? tipoDefinitions[0]?.id ?? 0;
+
+  useEffect(() => {
+    if (filtroTipo !== "todos" && !tipoDefinitions.some((tipo) => tipo.id === filtroTipo)) {
+      setFiltroTipo("todos");
+    }
+  }, [filtroTipo, tipoDefinitions]);
+
   const resetForm = () => {
     setEditing(null);
     setForm({
       clienteId: 0,
       usuarioResponsavelId: 0,
-      status: HistoriaStatus.Pendente,
-      tipo: HistoriaTipo.Projeto,
+      statusId: defaultStatusId,
+      tipoId: defaultTipoId,
       dataInicio: "",
       dataFinalizacao: "",
       observacoes: "",
@@ -200,9 +213,9 @@ const HistoriasPage = () => {
     setForm({
       id: historia.id,
       clienteId: historia.clienteId,
-      usuarioResponsavelId: historia.usuarioResponsavelId,
-      status: historia.status,
-      tipo: historia.tipo,
+      usuarioResponsavelId: historia.usuarioResponsavelId ?? 0,
+      statusId: historia.statusId,
+      tipoId: historia.tipoId,
       dataInicio: historia.dataInicio?.slice(0, 10),
       dataFinalizacao: historia.dataFinalizacao?.slice(0, 10) ?? "",
       observacoes: historia.observacoes ?? "",
@@ -214,7 +227,14 @@ const HistoriasPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.clienteId || form.produtosSelecionados.length === 0 || !form.usuarioResponsavelId) return;
+    if (
+      !form.clienteId ||
+      form.produtosSelecionados.length === 0 ||
+      !form.usuarioResponsavelId ||
+      !form.statusId ||
+      !form.tipoId
+    )
+      return;
     setSaving(true);
     try {
       const produtosPayload = form.produtosSelecionados.map((produtoId) => ({
@@ -223,9 +243,9 @@ const HistoriasPage = () => {
       }));
       const payload: CreateHistoriaRequest = {
         clienteId: form.clienteId,
-        usuarioResponsavelId: form.usuarioResponsavelId,
-        status: form.status,
-        tipo: form.tipo,
+        usuarioResponsavelId: form.usuarioResponsavelId || null,
+        statusId: form.statusId,
+        tipoId: form.tipoId,
         dataInicio: form.dataInicio || null,
         dataFinalizacao: form.dataFinalizacao || null,
         observacoes: form.observacoes || null,
@@ -252,13 +272,13 @@ const HistoriasPage = () => {
     }
   };
 
-  const handleStatusChange = async (historia: HistoriaDto, novoStatus: HistoriaStatus) => {
-    if (historia.status === novoStatus) return;
+  const handleStatusChange = async (historia: HistoriaDto, novoStatusId: number) => {
+    if (historia.statusId === novoStatusId) return;
     setSaving(true);
     try {
       const updated = await HistoriaService.adicionarMovimentacao(
         historia.id,
-        { statusNovo: novoStatus },
+        { statusNovoId: novoStatusId },
         empresaIdParam
       );
       setHistorias((prev) => prev.map((h) => (h.id === updated.id ? updated : h)));
@@ -274,36 +294,38 @@ const HistoriasPage = () => {
 
   const handleDragEnd = () => setDragOverStatus(null);
 
-  const handleDragOverColumn = (status: HistoriaStatus) => (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOverColumn = (statusId: number) => (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setDragOverStatus(status);
+    setDragOverStatus(statusId);
   };
 
   const handleDragLeaveColumn = () => setDragOverStatus(null);
 
-  const handleDropOnColumn = (status: HistoriaStatus) => async (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDropOnColumn = (statusId: number) => async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragOverStatus(null);
     const idValue = event.dataTransfer.getData("text/plain");
     const id = Number(idValue);
     if (!idValue || Number.isNaN(id)) return;
     const historia = historias.find((h) => h.id === id);
-    if (historia && historia.status !== status) {
-      await handleStatusChange(historia, status);
+    if (historia && historia.statusId !== statusId) {
+      await handleStatusChange(historia, statusId);
     }
   };
 
   const historiasFiltradas = useMemo(() => {
-    return historias.filter((h) => (filtroTipo === "todos" ? true : h.tipo === filtroTipo));
+    return historias.filter((h) => (filtroTipo === "todos" ? true : h.tipoId === filtroTipo));
   }, [historias, filtroTipo]);
 
-  const columns = useMemo(
+  const columns = useMemo<KanbanColumn[]>(
     () =>
-      statusOrder.map((status) => ({
-        status,
-        items: historiasFiltradas.filter((h) => h.status === status),
+      statusDefinitions.map((status) => ({
+        statusId: status.id,
+        statusNome: status.nome,
+        statusCor: status.cor,
+        items: historiasFiltradas.filter((h) => h.statusId === status.id),
       })),
-    [historiasFiltradas]
+    [statusDefinitions, historiasFiltradas]
   );
 
   const produtosFiltrados = useMemo(() => {
@@ -354,6 +376,11 @@ const HistoriasPage = () => {
   const renderCard = (historia: HistoriaDto) => {
     const ultimaMov: HistoriaMovimentacaoDto | undefined = historia.movimentacoes?.[0];
     const responsavel = historia.usuarioResponsavelNome || "Sem responsável";
+    const statusInfo = statusLookup.get(historia.statusId);
+    const tipoInfo = tipoLookup.get(historia.tipoId);
+    const badgeColor = statusInfo?.cor ?? historia.statusCor ?? DEFAULT_STATUS_COLOR;
+    const statusName = statusInfo?.nome ?? historia.statusNome ?? "Sem status";
+    const tipoName = tipoInfo?.nome ?? historia.tipoNome ?? "Sem tipo";
     return (
       <div
         className="kanban-card"
@@ -362,11 +389,11 @@ const HistoriasPage = () => {
         onDragEnd={handleDragEnd}
       >
         <div className="kanban-card-header">
-          <div className="kanban-pill" style={{ backgroundColor: badgeTone[historia.status] }}>
-            {statusLabels[historia.status]}
+          <div className="kanban-pill" style={{ backgroundColor: badgeColor }}>
+            {statusName}
           </div>
         </div>
-        <div className="kanban-title">{tipoLabels[historia.tipo]}</div>
+        <div className="kanban-title">{tipoName}</div>
         <div className="kanban-meta">
           <strong>Cliente:</strong> {historia.clienteNome}
         </div>
@@ -415,15 +442,14 @@ const HistoriasPage = () => {
       subtitle="Acompanhe projetos, entregas e implementações em um quadro kanban."
       actions={
         <div className="actions-bar">
-          <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value === "todos" ? "todos" : Number(e.target.value) as HistoriaTipo)}>
+          <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value === "todos" ? "todos" : Number(e.target.value))}>
             <option value="todos">Todos os tipos</option>
-            {Object.values(HistoriaTipo)
-              .filter((v) => typeof v === "number")
-              .map((v) => (
-                <option key={v} value={v as number}>
-                  {tipoLabels[v as HistoriaTipo]}
-                </option>
-              ))}
+            {tipoDefinitions.map((tipo) => (
+              <option key={tipo.id} value={tipo.id}>
+                {tipo.nome}
+                {!tipo.ativo ? " (inativo)" : ""}
+              </option>
+            ))}
           </select>
           <button className="primary" onClick={openCreate}>
             Nova história
@@ -434,20 +460,23 @@ const HistoriasPage = () => {
       {erroCarregamento && <div className="card danger">{erroCarregamento}</div>}
       {loading ? (
         <div className="card">Carregando histórias...</div>
+      ) : columns.length === 0 ? (
+        <div className="card info">Configure ao menos um status de história para visualizar o kanban.</div>
       ) : (
         <div className="kanban-board">
           {columns.map((col) => (
-            <div key={col.status} className="kanban-column">
+            <div key={col.statusId} className="kanban-column">
               <div className="kanban-column-header">
                 <span className="kanban-column-title">
-                  {statusIcons[col.status]} {statusLabels[col.status]}
+                  <span className="color-dot" style={{ backgroundColor: col.statusCor ?? DEFAULT_STATUS_COLOR }} />
+                  {col.statusNome}
                 </span>
                 <span className="kanban-count">{col.items.length}</span>
               </div>
               <div
-                className={`kanban-column-body ${dragOverStatus === col.status ? "is-drag-over" : ""}`}
-                onDragOver={handleDragOverColumn(col.status)}
-                onDrop={handleDropOnColumn(col.status)}
+                className={`kanban-column-body ${dragOverStatus === col.statusId ? "is-drag-over" : ""}`}
+                onDragOver={handleDragOverColumn(col.statusId)}
+                onDrop={handleDropOnColumn(col.statusId)}
                 onDragLeave={handleDragLeaveColumn}
               >
                 {col.items.length === 0 ? (
@@ -511,29 +540,37 @@ const HistoriasPage = () => {
                   <label className="form-field">
                     Tipo
                     <select
-                      value={form.tipo}
-                      onChange={(e) => setForm((f) => ({ ...f, tipo: Number(e.target.value) as HistoriaTipo }))}
+                      value={form.tipoId}
+                      onChange={(e) => setForm((f) => ({ ...f, tipoId: Number(e.target.value) }))}
                     >
-                      {Object.values(HistoriaTipo)
-                        .filter((v) => typeof v === "number")
-                        .map((v) => (
-                          <option key={v} value={v as number}>
-                            {tipoLabels[v as HistoriaTipo]}
+                      {tipoDefinitions.length === 0 ? (
+                        <option value={0}>Nenhum tipo disponível</option>
+                      ) : (
+                        tipoDefinitions.map((tipo) => (
+                          <option key={tipo.id} value={tipo.id} disabled={!tipo.ativo}>
+                            {tipo.nome}
+                            {!tipo.ativo ? " (inativo)" : ""}
                           </option>
-                        ))}
+                        ))
+                      )}
                     </select>
                   </label>
                   <label className="form-field">
                     Status
                     <select
-                      value={form.status}
-                      onChange={(e) => setForm((f) => ({ ...f, status: Number(e.target.value) as HistoriaStatus }))}
+                      value={form.statusId}
+                      onChange={(e) => setForm((f) => ({ ...f, statusId: Number(e.target.value) }))}
                     >
-                      {statusOrder.map((s) => (
-                        <option key={s} value={s}>
-                          {statusLabels[s]}
-                        </option>
-                      ))}
+                      {statusDefinitions.length === 0 ? (
+                        <option value={0}>Nenhum status disponível</option>
+                      ) : (
+                        statusDefinitions.map((status) => (
+                          <option key={status.id} value={status.id} disabled={!status.ativo}>
+                            {status.nome}
+                            {!status.ativo ? " (inativo)" : ""}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </label>
                 </div>

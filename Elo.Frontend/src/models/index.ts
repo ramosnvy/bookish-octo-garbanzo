@@ -311,27 +311,13 @@ export interface ContaParcelaDto {
   status: ContaStatus;
 }
 
-export enum HistoriaStatus {
-  Pendente = 1,
-  EmAndamento = 2,
-  Concluida = 3,
-  Cancelada = 4,
-  Pausada = 5,
-}
-
-export enum HistoriaTipo {
-  Projeto = 1,
-  Entrega = 2,
-  Operacao = 3,
-  Implementacao = 4,
-  OrdemDeServico = 5,
-}
-
 export interface HistoriaMovimentacaoDto {
   id: number;
   historiaId: number;
-  statusAnterior: HistoriaStatus;
-  statusNovo: HistoriaStatus;
+  statusAnteriorId: number;
+  statusAnteriorNome: string;
+  statusNovoId: number;
+  statusNovoNome: string;
   usuarioId: number;
   usuarioNome: string;
   dataMovimentacao: string;
@@ -344,10 +330,16 @@ export interface HistoriaDto {
   clienteNome: string;
   produtoId: number;
   produtoNome: string;
-  status: HistoriaStatus;
-  tipo: HistoriaTipo;
-  usuarioResponsavelId: number;
-  usuarioResponsavelNome: string;
+  statusId: number;
+  statusNome: string;
+  statusCor?: string | null;
+  statusFechaHistoria: boolean;
+  tipoId: number;
+  tipoNome: string;
+  tipoDescricao?: string | null;
+  usuarioResponsavelId?: number | null;
+  usuarioResponsavelNome?: string | null;
+  previsaoDias?: number | null;
   dataInicio: string;
   dataFinalizacao?: string | null;
   observacoes?: string | null;
@@ -359,9 +351,9 @@ export interface HistoriaDto {
 
 export interface CreateHistoriaRequest {
   clienteId: number;
-  status: HistoriaStatus;
-  tipo: HistoriaTipo;
-  usuarioResponsavelId: number;
+  statusId: number;
+  tipoId: number;
+  usuarioResponsavelId?: number | null;
   dataInicio?: string | null;
   dataFinalizacao?: string | null;
   observacoes?: string | null;
@@ -385,8 +377,54 @@ export interface HistoriaProdutoInputDto {
 }
 
 export interface CreateHistoriaMovimentacaoRequest {
-  statusNovo: HistoriaStatus;
+  statusNovoId: number;
   observacoes?: string | null;
+}
+
+export interface HistoriaStatusConfigDto {
+  id: number;
+  nome: string;
+  descricao?: string | null;
+  cor?: string | null;
+  fechaHistoria: boolean;
+  ordem: number;
+  ativo: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateHistoriaStatusConfigRequest {
+  nome: string;
+  descricao?: string | null;
+  cor?: string | null;
+  fechaHistoria: boolean;
+  ordem: number;
+  ativo: boolean;
+}
+
+export interface UpdateHistoriaStatusConfigRequest extends CreateHistoriaStatusConfigRequest {
+  id: number;
+}
+
+export interface HistoriaTipoConfigDto {
+  id: number;
+  nome: string;
+  descricao?: string | null;
+  ordem: number;
+  ativo: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateHistoriaTipoConfigRequest {
+  nome: string;
+  descricao?: string | null;
+  ordem: number;
+  ativo: boolean;
+}
+
+export interface UpdateHistoriaTipoConfigRequest extends CreateHistoriaTipoConfigRequest {
+  id: number;
 }
 
 export enum TicketStatus {
@@ -461,4 +499,25 @@ export interface UpdateTicketRequest extends CreateTicketRequest {
 export interface CreateRespostaTicketRequest {
   mensagem: string;
   isInterna: boolean;
+}
+
+export interface TicketTipoConfigDto {
+  id: number;
+  nome: string;
+  descricao?: string | null;
+  ordem: number;
+  ativo: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface CreateTicketTipoConfigRequest {
+  nome: string;
+  descricao?: string | null;
+  ordem: number;
+  ativo: boolean;
+}
+
+export interface UpdateTicketTipoConfigRequest extends CreateTicketTipoConfigRequest {
+  id: number;
 }
