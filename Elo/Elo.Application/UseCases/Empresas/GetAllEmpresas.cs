@@ -23,10 +23,13 @@ public static class GetAllEmpresas
             return empresas.Select(e => new EmpresaDto
             {
                 Id = e.Id,
-                Nome = e.Nome,
-                Documento = e.Documento,
-                EmailContato = e.EmailContato,
-                TelefoneContato = e.TelefoneContato,
+                RazaoSocial = e.RazaoSocial,
+                NomeFantasia = e.NomeFantasia,
+                Cnpj = e.Cnpj,
+                Ie = e.Ie,
+                Email = e.Email,
+                Telefone = e.Telefone,
+                Endereco = e.Endereco,
                 Ativo = e.Ativo,
                 CreatedAt = e.CreatedAt,
                 UpdatedAt = e.UpdatedAt

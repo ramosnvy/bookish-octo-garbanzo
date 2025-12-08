@@ -31,14 +31,14 @@ public class EmpresasController : ControllerBase
     {
         var command = new CreateEmpresa.Command
         {
-            Nome = dto.Nome,
-            Documento = dto.Documento,
-            EmailContato = dto.EmailContato,
-            TelefoneContato = dto.TelefoneContato,
-            Ativo = dto.Ativo,
-            UsuarioNome = dto.UsuarioInicial.Nome,
-            UsuarioEmail = dto.UsuarioInicial.Email,
-            UsuarioPassword = dto.UsuarioInicial.Password
+            RazaoSocial = dto.RazaoSocial,
+            NomeFantasia = dto.NomeFantasia,
+            Cnpj = dto.Cnpj,
+            Ie = dto.Ie,
+            Email = dto.Email,
+            Telefone = dto.Telefone,
+            Endereco = dto.Endereco,
+            Ativo = dto.Ativo
         };
 
         var result = await _mediator.Send(command);
@@ -51,10 +51,13 @@ public class EmpresasController : ControllerBase
         var command = new UpdateEmpresa.Command
         {
             Id = id,
-            Nome = dto.Nome,
-            Documento = dto.Documento,
-            EmailContato = dto.EmailContato,
-            TelefoneContato = dto.TelefoneContato,
+            RazaoSocial = dto.RazaoSocial,
+            NomeFantasia = dto.NomeFantasia,
+            Cnpj = dto.Cnpj,
+            Ie = dto.Ie,
+            Email = dto.Email,
+            Telefone = dto.Telefone,
+            Endereco = dto.Endereco,
             Ativo = dto.Ativo
         };
 

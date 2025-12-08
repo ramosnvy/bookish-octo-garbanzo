@@ -3,9 +3,9 @@ import AppLayout from "../components/AppLayout";
 import {
   ClienteDto,
   TicketDto,
+  TicketTipoConfigDto,
   TicketPrioridade,
   TicketStatus,
-  TicketTipo,
   CreateTicketRequest,
   UpdateTicketRequest,
   CreateRespostaTicketRequest,
@@ -13,6 +13,7 @@ import {
 import { ClienteService } from "../services/ClienteService";
 import { TicketService } from "../services/TicketService";
 import { UserService } from "../services/UserService";
+import { TicketTipoService } from "../services/TicketTipoService";
 import { useAuth } from "../context/AuthContext";
 import "../components.css";
 import "../styles.css";
@@ -33,14 +34,6 @@ const ticketStatusLabels: Record<TicketStatus, string> = {
   [TicketStatus.Resolvido]: "Resolvido",
   [TicketStatus.Fechado]: "Fechado",
   [TicketStatus.Cancelado]: "Cancelado",
-};
-
-const ticketTipoLabels: Record<TicketTipo, string> = {
-  [TicketTipo.Suporte]: "Suporte",
-  [TicketTipo.Bug]: "Bug",
-  [TicketTipo.Melhoria]: "Melhoria",
-  [TicketTipo.Duvida]: "Dúvida",
-  [TicketTipo.Incidente]: "Incidente",
 };
 
 const ticketPriorityLabels: Record<TicketPrioridade, string> = {
@@ -78,7 +71,7 @@ type TicketForm = {
   clienteId: number;
   titulo: string;
   descricao: string;
-  tipo: TicketTipo;
+  ticketTipoId: number;
   prioridade: TicketPrioridade;
   status: TicketStatus;
   usuarioAtribuidoId?: number | null;
@@ -90,7 +83,7 @@ const initialForm: TicketForm = {
   clienteId: 0,
   titulo: "",
   descricao: "",
-  tipo: TicketTipo.Suporte,
+  ticketTipoId: 0,
   prioridade: TicketPrioridade.Media,
   status: TicketStatus.Aberto,
   usuarioAtribuidoId: null,
@@ -144,6 +137,7 @@ const TicketsPage = () => {
   const [tickets, setTickets] = useState<TicketDto[]>([]);
   const [clientes, setClientes] = useState<ClienteDto[]>([]);
   const [usuarios, setUsuarios] = useState<{ id: number; nome: string }[]>([]);
+  const [ticketTipos, setTicketTipos] = useState<TicketTipoConfigDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<TicketForm>(initialForm);
   const [selectedTicket, setSelectedTicket] = useState<TicketDto | null>(null);
@@ -157,19 +151,41 @@ const TicketsPage = () => {
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
+  const activeTicketTipos = useMemo(
+    () =>
+      ticketTipos
+        .filter((tipo) => tipo.ativo)
+        .sort((a, b) => a.ordem - b.ordem || a.id - b.id),
+    [ticketTipos]
+  );
+
   const loadLookupData = async (force = false) => {
-    if (!force && clientes.length && usuarios.length) {
+    const shouldLoadClientes = force || clientes.length === 0;
+    const shouldLoadUsuarios = force || usuarios.length === 0;
+    const shouldLoadTicketTipos = force || ticketTipos.length === 0;
+
+    if (!shouldLoadClientes && !shouldLoadUsuarios && !shouldLoadTicketTipos) {
       return;
     }
+
     try {
-      const [cli, usr] = await Promise.all([
-        ClienteService.getAll(selectedEmpresaId ?? undefined),
-        UserService.getAll(selectedEmpresaId ?? undefined),
+      const [cli, usr, tipos] = await Promise.all([
+        shouldLoadClientes ? ClienteService.getAll(empresaIdParam) : Promise.resolve<ClienteDto[] | null>(null),
+        shouldLoadUsuarios ? UserService.getAll(empresaIdParam) : Promise.resolve(null),
+        shouldLoadTicketTipos ? TicketTipoService.getAll(empresaIdParam) : Promise.resolve<TicketTipoConfigDto[] | null>(null),
       ]);
-      setClientes(cli);
-      setUsuarios(usr.map((u) => ({ id: u.id, nome: u.nome })));
+
+      if (cli) {
+        setClientes(cli);
+      }
+      if (usr) {
+        setUsuarios(usr.map((u) => ({ id: u.id, nome: u.nome })));
+      }
+      if (tipos) {
+        setTicketTipos(tipos);
+      }
     } catch (error) {
-      console.error("Erro ao carregar clientes ou funcionários", error);
+      console.error("Erro ao carregar clientes, funcionários ou tipos de ticket", error);
     }
   };
 
@@ -190,13 +206,22 @@ const TicketsPage = () => {
     fetchTickets();
   }, [selectedEmpresaId]);
 
+  useEffect(() => {
+    if (activeTicketTipos.length > 0 && !form.ticketTipoId) {
+      setForm((prev) => ({
+        ...prev,
+        ticketTipoId: prev.ticketTipoId || activeTicketTipos[0].id,
+      }));
+    }
+  }, [activeTicketTipos, form.ticketTipoId]);
+
   const setFormFromTicket = (ticket: TicketDto) => {
     setForm({
       id: ticket.id,
       clienteId: ticket.clienteId,
       titulo: ticket.titulo,
       descricao: ticket.descricao,
-      tipo: ticket.tipo,
+      ticketTipoId: ticket.ticketTipoId,
       prioridade: ticket.prioridade,
       status: ticket.status,
       usuarioAtribuidoId: ticket.usuarioAtribuidoId ?? null,
@@ -206,7 +231,10 @@ const TicketsPage = () => {
   };
 
   const resetForm = () => {
-    setForm(initialForm);
+    setForm({
+      ...initialForm,
+      ticketTipoId: activeTicketTipos[0]?.id ?? 0,
+    });
   };
 
   const clearSelection = () => {
@@ -246,13 +274,13 @@ const TicketsPage = () => {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!form.clienteId || !form.titulo) return;
+    if (!form.clienteId || !form.titulo || !form.ticketTipoId) return;
     setSaving(true);
     const payload: CreateTicketRequest = {
       clienteId: form.clienteId,
+      ticketTipoId: form.ticketTipoId,
       titulo: form.titulo,
       descricao: form.descricao,
-      tipo: form.tipo,
       prioridade: form.prioridade,
       status: form.status,
       usuarioAtribuidoId: form.usuarioAtribuidoId,
@@ -331,7 +359,7 @@ const TicketsPage = () => {
     clienteId: ticket.clienteId,
     titulo: ticket.titulo,
     descricao: ticket.descricao,
-    tipo: ticket.tipo,
+    ticketTipoId: ticket.ticketTipoId,
     prioridade: ticket.prioridade,
     status,
     usuarioAtribuidoId: ticket.usuarioAtribuidoId,
@@ -451,7 +479,7 @@ const TicketsPage = () => {
                           <td>#{ticket.numeroExterno || ticket.id}</td>
                           <td>{ticket.titulo}</td>
                           <td>{ticket.clienteNome}</td>
-                          <td>{ticketTipoLabels[ticket.tipo]}</td>
+                          <td>{ticket.ticketTipoNome || "—"}</td>
                           <td>
                             <div className="ticket-status-cell">
                               <select
@@ -588,16 +616,25 @@ const TicketsPage = () => {
                     <label className="form-field">
                       Tipo
                       <select
-                        value={form.tipo}
-                        onChange={(e) => setForm((prev) => ({ ...prev, tipo: Number(e.target.value) as TicketTipo }))}
+                        value={form.ticketTipoId || ""}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            ticketTipoId: e.target.value ? Number(e.target.value) : 0,
+                          }))
+                        }
+                        required
+                        disabled={!activeTicketTipos.length}
                       >
-                        {Object.values(TicketTipo)
-                          .filter((value) => typeof value === "number")
-                          .map((value) => (
-                            <option key={value} value={value as number}>
-                              {ticketTipoLabels[value as TicketTipo]}
+                        {activeTicketTipos.length === 0 ? (
+                          <option value="">Cadastre tipos de ticket nas configurações</option>
+                        ) : (
+                          activeTicketTipos.map((tipo) => (
+                            <option key={tipo.id} value={tipo.id}>
+                              {tipo.nome}
                             </option>
-                          ))}
+                          ))
+                        )}
                       </select>
                     </label>
                     <label className="form-field">
@@ -685,7 +722,11 @@ const TicketsPage = () => {
                       const meta: ReactNode[] = [];
                       meta.push(buildMetaLabel("Cliente", discussionTicket.clienteNome, "cliente"));
                       meta.push(
-                        buildMetaLabel("Tipo", ticketTipoLabels[discussionTicket.tipo], "tipo")
+                        buildMetaLabel(
+                          "Tipo",
+                          discussionTicket.ticketTipoNome || `Tipo #${discussionTicket.ticketTipoId}`,
+                          "tipo"
+                        )
                       );
                       meta.push(
                         buildMetaLabel(

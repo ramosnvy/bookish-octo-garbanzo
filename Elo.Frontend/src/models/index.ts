@@ -436,14 +436,6 @@ export enum TicketStatus {
   Cancelado = 6,
 }
 
-export enum TicketTipo {
-  Suporte = 1,
-  Bug = 2,
-  Melhoria = 3,
-  Duvida = 4,
-  Incidente = 5,
-}
-
 export enum TicketPrioridade {
   Baixa = 1,
   Media = 2,
@@ -465,9 +457,10 @@ export interface TicketDto {
   id: number;
   clienteId: number;
   clienteNome: string;
+  ticketTipoId: number;
+  ticketTipoNome: string;
   titulo: string;
   descricao: string;
-  tipo: TicketTipo;
   prioridade: TicketPrioridade;
   status: TicketStatus;
   usuarioAtribuidoId?: number | null;
@@ -482,9 +475,9 @@ export interface TicketDto {
 
 export interface CreateTicketRequest {
   clienteId: number;
+  ticketTipoId: number;
   titulo: string;
   descricao: string;
-  tipo: TicketTipo;
   prioridade: TicketPrioridade;
   status: TicketStatus;
   usuarioAtribuidoId?: number | null;

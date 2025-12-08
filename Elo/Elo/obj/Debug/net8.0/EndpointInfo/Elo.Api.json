@@ -4351,27 +4351,36 @@
       "CreateEmpresaDto": {
         "type": "object",
         "properties": {
-          "nome": {
+          "razaoSocial": {
             "type": "string",
             "nullable": true
           },
-          "documento": {
+          "nomeFantasia": {
             "type": "string",
             "nullable": true
           },
-          "emailContato": {
+          "cnpj": {
             "type": "string",
             "nullable": true
           },
-          "telefoneContato": {
+          "ie": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "telefone": {
+            "type": "string",
+            "nullable": true
+          },
+          "endereco": {
             "type": "string",
             "nullable": true
           },
           "ativo": {
             "type": "boolean"
-          },
-          "usuarioInicial": {
-            "$ref": "#/components/schemas/InitialUserDto"
           }
         },
         "additionalProperties": false
@@ -4686,19 +4695,31 @@
             "type": "integer",
             "format": "int32"
           },
-          "nome": {
+          "razaoSocial": {
             "type": "string",
             "nullable": true
           },
-          "documento": {
+          "nomeFantasia": {
             "type": "string",
             "nullable": true
           },
-          "emailContato": {
+          "cnpj": {
             "type": "string",
             "nullable": true
           },
-          "telefoneContato": {
+          "ie": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "telefone": {
+            "type": "string",
+            "nullable": true
+          },
+          "endereco": {
             "type": "string",
             "nullable": true
           },
@@ -5172,24 +5193,6 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "InitialUserDto": {
-        "type": "object",
-        "properties": {
-          "nome": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "password": {
-            "type": "string",
             "nullable": true
           }
         },
@@ -5781,19 +5784,31 @@
       "UpdateEmpresaDto": {
         "type": "object",
         "properties": {
-          "nome": {
+          "razaoSocial": {
             "type": "string",
             "nullable": true
           },
-          "documento": {
+          "nomeFantasia": {
             "type": "string",
             "nullable": true
           },
-          "emailContato": {
+          "cnpj": {
             "type": "string",
             "nullable": true
           },
-          "telefoneContato": {
+          "ie": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "telefone": {
+            "type": "string",
+            "nullable": true
+          },
+          "endereco": {
             "type": "string",
             "nullable": true
           },

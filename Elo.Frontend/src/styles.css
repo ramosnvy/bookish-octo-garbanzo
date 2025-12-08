@@ -807,6 +807,145 @@ a {
   gap: 1rem;
 }
 
+.dashboard-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dashboard-highlight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-metric h4 {
+  margin: 0.15rem 0 0;
+  font-size: 1.6rem;
+}
+
+.dashboard-metric small {
+  color: var(--color-subtle);
+}
+
+.trend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.trend-up {
+  color: var(--color-success);
+}
+
+.trend-down {
+  color: var(--color-danger);
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 999px;
+  background: var(--color-subtle);
+}
+
+.dashboard-table {
+  padding: 1.25rem;
+}
+
+.dashboard-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-table th {
+  text-align: left;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+  padding-bottom: 0.4rem;
+}
+
+.dashboard-table td {
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.priority-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  text-transform: capitalize;
+}
+
+.priority-1 {
+  color: var(--color-muted);
+}
+
+.priority-2 {
+  color: var(--color-accent-strong);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.priority-3 {
+  color: #f97316;
+  border-color: rgba(249, 115, 22, 0.4);
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.priority-4 {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.45);
+  background: rgba(220, 38, 38, 0.1);
+}
+
 .form-inline {
   display: grid;
   grid-template-columns: 1fr;

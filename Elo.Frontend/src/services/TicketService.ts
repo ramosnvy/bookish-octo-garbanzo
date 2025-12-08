@@ -4,14 +4,13 @@ import {
   TicketDto,
   TicketPrioridade,
   TicketStatus,
-  TicketTipo,
   UpdateTicketRequest,
 } from "../models";
 import { api } from "../api/client";
 
 export interface TicketFilter {
   status?: TicketStatus;
-  tipo?: TicketTipo;
+  tipoId?: number;
   prioridade?: TicketPrioridade;
   clienteId?: number;
   usuarioAtribuidoId?: number;
@@ -31,7 +30,6 @@ const mapEnumValue = <T extends Record<string | number, number | string>>(
 const normalizeTicketDto = (ticket: TicketDto): TicketDto => ({
   ...ticket,
   status: mapEnumValue(ticket.status, TicketStatus) as TicketStatus,
-  tipo: mapEnumValue(ticket.tipo, TicketTipo) as TicketTipo,
   prioridade: mapEnumValue(ticket.prioridade, TicketPrioridade) as TicketPrioridade,
   respostas: ticket.respostas.map((resp) => ({
     ...resp,

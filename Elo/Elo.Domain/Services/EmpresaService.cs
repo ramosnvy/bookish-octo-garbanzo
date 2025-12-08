@@ -1,6 +1,4 @@
 using Elo.Domain.Entities;
-using Elo.Domain.Enums;
-using Elo.Domain.Exceptions;
 using Elo.Domain.Interfaces;
 using Elo.Domain.Interfaces.Repositories;
 
@@ -9,35 +7,15 @@ namespace Elo.Domain.Services;
 public class EmpresaService : IEmpresaService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPasswordHasher _passwordHasher;
 
-    public EmpresaService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
+    public EmpresaService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _passwordHasher = passwordHasher;
     }
 
-    public async Task<Empresa> CriarEmpresaAsync(Empresa empresa, string usuarioNome, string usuarioEmail, string usuarioPassword)
+    public async Task<Empresa> CriarEmpresaAsync(Empresa empresa)
     {
-        if (await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == usuarioEmail) != null)
-        {
-            throw new ClienteJaExisteException("Já existe um usuário com este email");
-        }
-
         await _unitOfWork.Empresas.AddAsync(empresa);
-        await _unitOfWork.SaveChangesAsync();
-
-        var user = new User
-        {
-            Nome = usuarioNome,
-            Email = usuarioEmail,
-            PasswordHash = _passwordHasher.HashPassword(usuarioPassword),
-            Role = UserRole.Admin,
-            EmpresaId = empresa.Id,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _unitOfWork.Users.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
         return empresa;

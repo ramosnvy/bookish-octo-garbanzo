@@ -55,10 +55,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Empresa>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Documento).HasMaxLength(50);
-            entity.Property(e => e.EmailContato).HasMaxLength(150);
-            entity.Property(e => e.TelefoneContato).HasMaxLength(30);
+            entity.Property(e => e.RazaoSocial).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.NomeFantasia).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Cnpj).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Ie).HasMaxLength(50);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.Telefone).IsRequired().HasMaxLength(30);
+            entity.Property(e => e.Endereco).IsRequired().HasMaxLength(500);
         });
 
         // Pessoa configuration

@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "rGZo/Snxwl0=",
+  "dgSpecHash": "yE3GnrOAmNXunXc54pAo6G19fqPawJcXF2NJRw0qvNVh0wsRv+oPbcFMBj8kvYTerH/yO3Z2ItrFnKDu8dwlcg==",
   "success": true,
-  "projectFilePath": "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj",
+  "projectFilePath": "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\pedro\\.nuget\\packages\\fluentvalidation\\11.8.1\\fluentvalidation.11.8.1.nupkg.sha512",
-    "C:\\Users\\pedro\\.nuget\\packages\\mediatr\\12.2.0\\mediatr.12.2.0.nupkg.sha512",
-    "C:\\Users\\pedro\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
-    "C:\\Users\\pedro\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512"
+    "/root/.nuget/packages/fluentvalidation/11.8.1/fluentvalidation.11.8.1.nupkg.sha512",
+    "/root/.nuget/packages/mediatr/12.2.0/mediatr.12.2.0.nupkg.sha512",
+    "/root/.nuget/packages/mediatr.contracts/2.0.1/mediatr.contracts.2.0.1.nupkg.sha512",
+    "/root/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512"
   ],
   "logs": []
 }

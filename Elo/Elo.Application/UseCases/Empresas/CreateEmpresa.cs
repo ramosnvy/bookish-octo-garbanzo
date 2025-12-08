@@ -9,14 +9,14 @@ public static class CreateEmpresa
 {
     public class Command : IRequest<EmpresaDto>
     {
-        public string Nome { get; set; } = string.Empty;
-        public string Documento { get; set; } = string.Empty;
-        public string EmailContato { get; set; } = string.Empty;
-        public string TelefoneContato { get; set; } = string.Empty;
+        public string RazaoSocial { get; set; } = string.Empty;
+        public string NomeFantasia { get; set; } = string.Empty;
+        public string Cnpj { get; set; } = string.Empty;
+        public string Ie { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string Endereco { get; set; } = string.Empty;
         public bool Ativo { get; set; } = true;
-        public string UsuarioNome { get; set; } = string.Empty;
-        public string UsuarioEmail { get; set; } = string.Empty;
-        public string UsuarioPassword { get; set; } = string.Empty;
     }
 
     public class Handler : IRequestHandler<Command, EmpresaDto>
@@ -32,23 +32,29 @@ public static class CreateEmpresa
         {
             var empresa = new Empresa
             {
-                Nome = request.Nome,
-                Documento = request.Documento,
-                EmailContato = request.EmailContato,
-                TelefoneContato = request.TelefoneContato,
+                RazaoSocial = request.RazaoSocial,
+                NomeFantasia = request.NomeFantasia,
+                Cnpj = request.Cnpj,
+                Ie = request.Ie,
+                Email = request.Email,
+                Telefone = request.Telefone,
+                Endereco = request.Endereco,
                 Ativo = request.Ativo,
                 CreatedAt = DateTime.UtcNow
             };
 
-            var criada = await _empresaService.CriarEmpresaAsync(empresa, request.UsuarioNome, request.UsuarioEmail, request.UsuarioPassword);
+            var criada = await _empresaService.CriarEmpresaAsync(empresa);
 
             return new EmpresaDto
             {
                 Id = criada.Id,
-                Nome = criada.Nome,
-                Documento = criada.Documento,
-                EmailContato = criada.EmailContato,
-                TelefoneContato = criada.TelefoneContato,
+                RazaoSocial = criada.RazaoSocial,
+                NomeFantasia = criada.NomeFantasia,
+                Cnpj = criada.Cnpj,
+                Ie = criada.Ie,
+                Email = criada.Email,
+                Telefone = criada.Telefone,
+                Endereco = criada.Endereco,
                 Ativo = criada.Ativo,
                 CreatedAt = criada.CreatedAt,
                 UpdatedAt = criada.UpdatedAt
