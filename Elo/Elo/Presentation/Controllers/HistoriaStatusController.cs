@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Elo.Application.DTOs.Historia;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 using Elo.Application.UseCases.HistoriaStatuses;
 
 namespace Elo.Presentation.Controllers;

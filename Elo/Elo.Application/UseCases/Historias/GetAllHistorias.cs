@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using MediatR;
+using Elo.Application.DTOs;
 using Elo.Application.DTOs.Historia;
+using Elo.Domain.Interfaces;
 using Elo.Domain.Entities;
-using Elo.Domain.Enums;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Application.UseCases.Assinaturas;
 
 namespace Elo.Application.UseCases.Historias;
 
@@ -13,9 +12,9 @@ public static class GetAllHistorias
     public class Query : IRequest<IEnumerable<HistoriaDto>>
     {
         public int? EmpresaId { get; set; }
+        public int? ClienteId { get; set; }
         public int? StatusId { get; set; }
         public int? TipoId { get; set; }
-        public int? ClienteId { get; set; }
         public int? ProdutoId { get; set; }
         public int? UsuarioResponsavelId { get; set; }
         public DateTime? DataInicio { get; set; }
@@ -24,151 +23,123 @@ public static class GetAllHistorias
 
     public class Handler : IRequestHandler<Query, IEnumerable<HistoriaDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IHistoriaService _historiaService;
+        private readonly IPessoaService _pessoaService;
+        private readonly IProdutoService _produtoService;
+        private readonly IUserService _userService;
+        private readonly IHistoriaStatusService _statusService;
+        private readonly IHistoriaTipoService _tipoService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(
+            IHistoriaService historiaService,
+            IPessoaService pessoaService,
+            IProdutoService produtoService,
+            IUserService userService,
+            IHistoriaStatusService statusService,
+            IHistoriaTipoService tipoService)
         {
-            _unitOfWork = unitOfWork;
+            _historiaService = historiaService;
+            _pessoaService = pessoaService;
+            _produtoService = produtoService;
+            _userService = userService;
+            _statusService = statusService;
+            _tipoService = tipoService;
         }
 
         public async Task<IEnumerable<HistoriaDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var clientes = await _unitOfWork.Pessoas.FindAsync(p =>
-                p.Tipo == PessoaTipo.Cliente &&
-                (!request.EmpresaId.HasValue || p.EmpresaId == request.EmpresaId.Value));
-            var clienteLookup = clientes.ToDictionary(c => c.Id, c => c);
+            // Fetch initial set (filtered by DB where possible)
+            var historias = await _historiaService.ObterHistoriasAsync(request.EmpresaId, request.ClienteId, request.StatusId);
+            var lista = historias.ToList();
 
-            var historias = (await _unitOfWork.Historias.GetAllAsync())
-                .Where(i => !request.EmpresaId.HasValue || clienteLookup.ContainsKey(i.ClienteId))
-                .ToList();
+            // Apply in-memory filters
+            if (request.TipoId.HasValue) lista = lista.Where(h => h.HistoriaTipoId == request.TipoId.Value).ToList();
+            if (request.ProdutoId.HasValue) lista = lista.Where(h => h.ProdutoId == request.ProdutoId.Value).ToList();
+            if (request.UsuarioResponsavelId.HasValue) lista = lista.Where(h => h.UsuarioResponsavelId == request.UsuarioResponsavelId.Value).ToList();
+            if (request.DataInicio.HasValue) lista = lista.Where(h => h.DataInicio >= request.DataInicio.Value).ToList();
+            if (request.DataFim.HasValue) lista = lista.Where(h => h.DataInicio <= request.DataFim.Value).ToList();
+            
+            if (!lista.Any()) return Enumerable.Empty<HistoriaDto>();
 
-            if (request.StatusId.HasValue)
-            {
-                historias = historias.Where(i => i.HistoriaStatusId == request.StatusId.Value).ToList();
-            }
+            var historiaIds = lista.Select(h => h.Id).ToList();
 
-            if (request.TipoId.HasValue)
-            {
-                historias = historias.Where(i => i.HistoriaTipoId == request.TipoId.Value).ToList();
-            }
+            // Fetch relations sequentially to avoid DbContext concurrency issues
+            var historiaProdutos = (await _historiaService.ObterProdutosPorListaIdsAsync(historiaIds)).ToList();
+            var movimentacoes = (await _historiaService.ObterMovimentacoesPorListaIdsAsync(historiaIds)).ToList();
+            
+            var clienteIds = lista.Select(h => h.ClienteId).Distinct().ToList();
+            var statusIds = lista.Select(h => h.HistoriaStatusId).Distinct().ToList();
+            var tipoIds = lista.Select(h => h.HistoriaTipoId).Distinct().ToList();
+            var userIds = lista.Where(h => h.UsuarioResponsavelId.HasValue).Select(h => h.UsuarioResponsavelId!.Value).Distinct().ToList();
 
-            if (request.ClienteId.HasValue)
-            {
-                historias = historias.Where(i => i.ClienteId == request.ClienteId.Value).ToList();
-            }
+            var produtoIds = lista.Select(h => h.ProdutoId).Union(historiaProdutos.Select(hp => hp.ProdutoId)).Distinct().ToList();
+            var moduloIds = historiaProdutos.SelectMany(hp => hp.ProdutoModuloIds ?? new List<int>()).Distinct().ToList();
 
-            if (request.UsuarioResponsavelId.HasValue)
-            {
-                historias = historias.Where(i => i.UsuarioResponsavelId == request.UsuarioResponsavelId.Value).ToList();
-            }
+            var clientes = await _pessoaService.ObterPessoasPorIdsAsync(clienteIds, request.EmpresaId);
+            var statuses = await _statusService.ObterPorListaIdsAsync(statusIds);
+            var tipos = await _tipoService.ObterPorListaIdsAsync(tipoIds);
+            var users = await _userService.ObterUsuariosPorIdsAsync(userIds);
+            var produtos = await _produtoService.ObterProdutosPorIdsAsync(produtoIds);
+            var modulos = await _produtoService.ObterModulosPorIdsAsync(moduloIds);
 
-            if (request.DataInicio.HasValue)
-            {
-                historias = historias.Where(i => i.DataInicio >= request.DataInicio.Value).ToList();
-            }
-
-            if (request.DataFim.HasValue)
-            {
-                historias = historias.Where(i => i.DataFinalizacao.HasValue && i.DataFinalizacao.Value <= request.DataFim.Value).ToList();
-            }
-
-            var historiaIds = historias.Select(i => i.Id).ToList();
-            var historiaProdutos = historiaIds.Any()
-                ? await _unitOfWork.HistoriaProdutos.FindAsync(hp => historiaIds.Contains(hp.HistoriaId))
-                : Enumerable.Empty<HistoriaProduto>();
-            var historiaProdutosLookup = historiaProdutos
-                .GroupBy(hp => hp.HistoriaId)
-                .ToDictionary(g => g.Key, g => g.ToList());
-            foreach (var id in historiaIds)
-            {
-                if (!historiaProdutosLookup.ContainsKey(id))
-                {
-                    historiaProdutosLookup[id] = new List<HistoriaProduto>();
-                }
-            }
-
-            if (request.ProdutoId.HasValue)
-            {
-                var idsComProduto = historiaProdutos
-                    .Where(hp => hp.ProdutoId == request.ProdutoId.Value)
-                    .Select(hp => hp.HistoriaId)
-                    .ToHashSet();
-                historias = historias.Where(i => idsComProduto.Contains(i.Id)).ToList();
-                historiaIds = historias.Select(i => i.Id).ToList();
-                historiaProdutosLookup = historiaProdutosLookup
-                    .Where(pair => historiaIds.Contains(pair.Key))
-                    .ToDictionary(pair => pair.Key, pair => pair.Value);
-                foreach (var id in historiaIds)
-                {
-                    if (!historiaProdutosLookup.ContainsKey(id))
-                    {
-                        historiaProdutosLookup[id] = new List<HistoriaProduto>();
-                    }
-                }
-            }
-
-            var produtosAssociados = historiaProdutosLookup.SelectMany(pair => pair.Value).ToList();
-            var produtoIds = produtosAssociados
-                .Select(p => p.ProdutoId)
-                .Concat(historias.Select(i => i.ProdutoId))
-                .Distinct()
-                .ToList();
-            var produtos = produtoIds.Any()
-                ? await _unitOfWork.Produtos.FindAsync(p => produtoIds.Contains(p.Id) && (!request.EmpresaId.HasValue || p.EmpresaId == request.EmpresaId.Value))
-                : Enumerable.Empty<Produto>();
-            var produtoLookup = produtos.ToDictionary(p => p.Id, p => p);
-
-            var moduloIds = produtosAssociados.SelectMany(p => p.ProdutoModuloIds).Distinct().ToList();
-            var modulos = moduloIds.Any()
-                ? await _unitOfWork.ProdutoModulos.FindAsync(h => moduloIds.Contains(h.Id))
-                : Enumerable.Empty<ProdutoModulo>();
+            var clienteLookup = clientes.ToDictionary(c => c.Id, c => c.Nome);
+            var statusLookup = statuses.ToDictionary(s => s.Id, s => s);
+            var tipoLookup = tipos.ToDictionary(t => t.Id, t => t);
+            var userLookup = users.ToDictionary(u => u.Id, u => u.Nome);
+            var produtoLookup = produtos.ToDictionary(p => p.Id, p => p.Nome);
             var moduloLookup = modulos.ToDictionary(m => m.Id, m => m);
 
-            var movimentos = historiaIds.Any()
-                ? await _unitOfWork.HistoriaMovimentacoes.FindAsync(m => historiaIds.Contains(m.HistoriaId))
-                : Enumerable.Empty<HistoriaMovimentacao>();
-            var movimentosLookup = movimentos
-                .GroupBy(m => m.HistoriaId)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            var hpLookup = historiaProdutos.GroupBy(hp => hp.HistoriaId).ToDictionary(g => g.Key, g => g.ToList());
+            var movLookup = movimentacoes.GroupBy(m => m.HistoriaId).ToDictionary(g => g.Key, g => g.ToList());
 
-            var statusIds = movimentos.SelectMany(m => new[] { m.StatusAnteriorId, m.StatusNovoId })
-                .Concat(historias.Select(i => i.HistoriaStatusId))
-                .Distinct()
-                .ToList();
-            var statuses = statusIds.Any()
-                ? await _unitOfWork.HistoriaStatuses.FindAsync(s => statusIds.Contains(s.Id))
-                : Enumerable.Empty<HistoriaStatus>();
-            var statusLookup = statuses.ToDictionary(s => s.Id, s => s);
-
-            var tipoIds = historias.Select(i => i.HistoriaTipoId).Distinct().ToList();
-            var tipos = tipoIds.Any()
-                ? await _unitOfWork.HistoriaTipos.FindAsync(t => tipoIds.Contains(t.Id))
-                : Enumerable.Empty<HistoriaTipo>();
-            var tipoLookup = tipos.ToDictionary(t => t.Id, t => t);
-
-            var usuarioIds = historias.Select(i => i.UsuarioResponsavelId)
-                .Where(id => id.HasValue)
-                .Select(id => id.Value)
-                .Concat(movimentos.Select(m => m.UsuarioId))
-                .Distinct()
-                .ToList();
-            var usuarios = usuarioIds.Any()
-                ? await _unitOfWork.Users.FindAsync(u => usuarioIds.Contains(u.Id))
-                : Enumerable.Empty<User>();
-            var usuarioLookup = usuarios.ToDictionary(u => u.Id, u => u);
-
-            return historias
-                .OrderByDescending(i => i.CreatedAt)
-                .Select(i => HistoriaMapper.ToDto(
-                    i,
-                    clienteLookup,
-                    produtoLookup,
-                    moduloLookup,
-                    usuarioLookup,
-                    statusLookup,
-                    tipoLookup,
-                    historiaProdutosLookup,
-                    movimentosLookup));
+            return lista.Select(h => new HistoriaDto
+            {
+                Id = h.Id,
+                ClienteId = h.ClienteId,
+                ClienteNome = clienteLookup.ContainsKey(h.ClienteId) ? clienteLookup[h.ClienteId] : string.Empty,
+                ProdutoId = h.ProdutoId,
+                ProdutoNome = produtoLookup.ContainsKey(h.ProdutoId) ? produtoLookup[h.ProdutoId] : string.Empty,
+                HistoriaStatusId = h.HistoriaStatusId,
+                HistoriaStatusNome = statusLookup.ContainsKey(h.HistoriaStatusId) ? statusLookup[h.HistoriaStatusId].Nome : string.Empty,
+                HistoriaStatusCor = statusLookup.ContainsKey(h.HistoriaStatusId) ? statusLookup[h.HistoriaStatusId].Cor : null,
+                StatusFechaHistoria = statusLookup.ContainsKey(h.HistoriaStatusId) ? statusLookup[h.HistoriaStatusId].FechaHistoria : false,
+                HistoriaTipoId = h.HistoriaTipoId,
+                HistoriaTipoNome = tipoLookup.ContainsKey(h.HistoriaTipoId) ? tipoLookup[h.HistoriaTipoId].Nome : string.Empty,
+                UsuarioResponsavelId = h.UsuarioResponsavelId,
+                UsuarioResponsavelNome = h.UsuarioResponsavelId.HasValue && userLookup.ContainsKey(h.UsuarioResponsavelId.Value) ? userLookup[h.UsuarioResponsavelId.Value] : string.Empty,
+                Observacoes = h.Observacoes,
+                PrevisaoDias = h.PrevisaoDias,
+                DataInicio = h.DataInicio,
+                DataFim = h.DataFim,
+                CreatedAt = h.CreatedAt,
+                UpdatedAt = h.UpdatedAt,
+                Produtos = hpLookup.ContainsKey(h.Id) 
+                    ? hpLookup[h.Id].Select(hp => new HistoriaProdutoDto
+                    {
+                        Id = hp.Id,
+                        HistoriaId = hp.HistoriaId,
+                        ProdutoId = hp.ProdutoId,
+                        ProdutoNome = produtoLookup.ContainsKey(hp.ProdutoId) ? produtoLookup[hp.ProdutoId] : string.Empty,
+                        ProdutoModuloIds = hp.ProdutoModuloIds,
+                        Modulos = hp.ProdutoModuloIds != null 
+                            ? hp.ProdutoModuloIds.Where(mid => moduloLookup.ContainsKey(mid))
+                                .Select(mid => new HistoriaProdutoModuloDto{ Id = mid, Nome = moduloLookup[mid].Nome }).ToList()
+                            : new List<HistoriaProdutoModuloDto>()
+                    }).ToList()
+                    : new List<HistoriaProdutoDto>(),
+                Movimentacoes = movLookup.ContainsKey(h.Id)
+                    ? movLookup[h.Id].OrderByDescending(m => m.DataMovimentacao).Select(m => new HistoriaMovimentacaoDto
+                    {
+                        Id = m.Id,
+                        HistoriaId = m.HistoriaId,
+                        StatusAnteriorId = m.StatusAnteriorId,
+                        StatusNovoId = m.StatusNovoId,
+                        UsuarioId = m.UsuarioId,
+                        Observacoes = m.Observacoes,
+                        DataMovimentacao = m.DataMovimentacao
+                    }).ToList()
+                    : new List<HistoriaMovimentacaoDto>()
+            });
         }
     }
 }

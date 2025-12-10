@@ -4,5 +4,50 @@
         <name>Elo.Api</name>
     </assembly>
     <members>
+        <member name="M:Elo.Presentation.Controllers.ClientesController.GetAllPaged(System.String,System.Nullable{Elo.Domain.Enums.Status},System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Obtém todos os clientes com paginação (otimizado para listagens)
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.ClientesController.GetAll(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Obtém todos os clientes (completos, sem paginação - use apenas quando necessário)
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.EmpresaFormasPagamentoController.GetAll(System.Boolean)">
+            <summary>
+            Lista todas as formas de pagamento disponíveis para a empresa.
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.EmpresaFormasPagamentoController.Create(Elo.Application.UseCases.EmpresaFormasPagamento.CreateEmpresaFormaPagamento.Command)">
+            <summary>
+            Cria uma nova forma de pagamento para a empresa.
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.EmpresaFormasPagamentoController.Delete(System.Int32)">
+            <summary>
+            Remove (soft delete) uma forma de pagamento da empresa.
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.HistoriasController.GetAllPaged(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Obtém todas as histórias com paginação (otimizado para listagens)
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.HistoriasController.GetAll(System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.Int32})">
+            <summary>
+            Obtém todas as histórias (completas, sem paginação - use apenas quando necessário)
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.TicketsController.GetAllPaged(System.Nullable{Elo.Domain.Enums.TicketStatus},System.Nullable{System.Int32},System.Nullable{Elo.Domain.Enums.TicketPrioridade},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>
+            Obtém todos os tickets com paginação (otimizado para listagens)
+            </summary>
+        </member>
+        <member name="M:Elo.Presentation.Controllers.TicketsController.GetAll(System.Nullable{Elo.Domain.Enums.TicketStatus},System.Nullable{System.Int32},System.Nullable{Elo.Domain.Enums.TicketPrioridade},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.Int32})">
+            <summary>
+            Obtém todos os tickets (completos, sem paginação - use apenas quando necessário)
+            </summary>
+        </member>
     </members>
 </doc>

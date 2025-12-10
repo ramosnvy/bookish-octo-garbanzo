@@ -1185,7 +1185,6 @@
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
           "BCrypt.Net-Next": "4.0.3",
-          "Elo.Application": "1.0.0",
           "Elo.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.0",
@@ -3239,38 +3238,45 @@
     ]
   },
   "packageFolders": {
-    "/root/.nuget/packages/": {}
+    "C:\\Users\\pedro\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/mnt/c/ramosnvy/Elo/Elo/Elo.Api.csproj",
+      "projectUniqueName": "C:\\ramosnvy\\Elo\\Elo\\Elo.Api.csproj",
       "projectName": "Elo.Api",
-      "projectPath": "/mnt/c/ramosnvy/Elo/Elo/Elo.Api.csproj",
-      "packagesPath": "/root/.nuget/packages/",
-      "outputPath": "/mnt/c/ramosnvy/Elo/Elo/obj/",
+      "projectPath": "C:\\ramosnvy\\Elo\\Elo\\Elo.Api.csproj",
+      "packagesPath": "C:\\Users\\pedro\\.nuget\\packages\\",
+      "outputPath": "C:\\ramosnvy\\Elo\\Elo\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "/root/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\pedro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj": {
-              "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj"
+            "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj": {
+              "projectPath": "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj"
             },
-            "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj": {
-              "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj"
+            "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj": {
+              "projectPath": "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj"
             },
-            "/mnt/c/ramosnvy/Elo/Elo.Infrastructure/Elo.Infrastructure.csproj": {
-              "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Infrastructure/Elo.Infrastructure.csproj"
+            "C:\\ramosnvy\\Elo\\Elo.Infrastructure\\Elo.Infrastructure.csproj": {
+              "projectPath": "C:\\ramosnvy\\Elo\\Elo.Infrastructure\\Elo.Infrastructure.csproj"
             }
           }
         }
@@ -3279,7 +3285,13 @@
         "warnAsError": [
           "NU1605"
         ]
-      }
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -3323,7 +3335,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.121/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

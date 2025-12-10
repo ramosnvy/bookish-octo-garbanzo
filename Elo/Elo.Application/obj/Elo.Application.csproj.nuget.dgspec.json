@@ -1,33 +1,39 @@
 {
   "format": 1,
   "restore": {
-    "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj": {}
+    "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj": {}
   },
   "projects": {
-    "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj": {
+    "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj",
+        "projectUniqueName": "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj",
         "projectName": "Elo.Application",
-        "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Application/Elo.Application.csproj",
-        "packagesPath": "/root/.nuget/packages/",
-        "outputPath": "/mnt/c/ramosnvy/Elo/Elo.Application/obj/",
+        "projectPath": "C:\\ramosnvy\\Elo\\Elo.Application\\Elo.Application.csproj",
+        "packagesPath": "C:\\Users\\pedro\\.nuget\\packages\\",
+        "outputPath": "C:\\ramosnvy\\Elo\\Elo.Application\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/root/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\pedro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj": {
-                "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj"
+              "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj": {
+                "projectPath": "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj"
               }
             }
           }
@@ -36,7 +42,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -67,26 +79,32 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.121/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj": {
+    "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj",
+        "projectUniqueName": "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj",
         "projectName": "Elo.Domain",
-        "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj",
-        "packagesPath": "/root/.nuget/packages/",
-        "outputPath": "/mnt/c/ramosnvy/Elo/Elo.Domain/obj/",
+        "projectPath": "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj",
+        "packagesPath": "C:\\Users\\pedro\\.nuget\\packages\\",
+        "outputPath": "C:\\ramosnvy\\Elo\\Elo.Domain\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/root/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\pedro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -99,7 +117,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -120,7 +144,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.121/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

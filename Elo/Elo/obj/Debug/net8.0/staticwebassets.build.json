@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "xdKgcKlOy+3FgoG8Korc05phWvEtB6ihyGtC2Ki+VZY=",
-  "Source": "Elo.Api",
-  "BasePath": "_content/Elo.Api",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"EwqRjwzPx9Y+1BiptR1vErtOMzyJCR1KaWIQ8GbZvS0=","Source":"Elo.Api","BasePath":"_content/Elo.Api","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}

@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using MediatR;
 using Elo.Application.DTOs.Ticket;
+using Elo.Domain.Interfaces;
+using Elo.Domain.Interfaces.Repositories;
 using Elo.Domain.Entities;
 using Elo.Domain.Enums;
-using Elo.Domain.Interfaces.Repositories;
 
 namespace Elo.Application.UseCases.Tickets;
 
@@ -18,90 +17,51 @@ public static class GetTicketById
 
     public class Handler : IRequestHandler<Query, TicketDto?>
     {
+        private readonly ITicketService _ticketService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(ITicketService ticketService, IUnitOfWork unitOfWork)
         {
+            _ticketService = ticketService;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<TicketDto?> Handle(Query request, CancellationToken cancellationToken)
         {
-            var ticket = await _unitOfWork.Tickets.GetByIdAsync(request.Id);
+            if (!request.EmpresaId.HasValue)
+                return null;
+
+            var ticket = await _ticketService.ObterTicketPorIdAsync(request.Id, request.EmpresaId.Value);
+            
             if (ticket == null)
-            {
                 return null;
-            }
 
+            return await MapearParaDtoAsync(ticket);
+        }
+
+        private async Task<TicketDto> MapearParaDtoAsync(Ticket ticket)
+        {
             var cliente = await _unitOfWork.Pessoas.GetByIdAsync(ticket.ClienteId);
-            if (cliente == null || cliente.Tipo != PessoaTipo.Cliente)
-            {
-                return null;
-            }
-
-            if (request.EmpresaId.HasValue && cliente.EmpresaId != request.EmpresaId.Value)
-            {
-                return null;
-            }
-
-            var respostas = await _unitOfWork.RespostasTicket.FindAsync(r => r.TicketId == ticket.Id);
-            var anexos = await _unitOfWork.TicketAnexos.FindAsync(a => a.TicketId == ticket.Id);
-
-            var usuarioIds = respostas.Select(r => r.UsuarioId)
-                .Concat(ticket.UsuarioAtribuidoId.HasValue
-                    ? new[] { ticket.UsuarioAtribuidoId.Value }
-                    : Enumerable.Empty<int>())
-                .Concat(anexos.Select(a => a.UsuarioId))
-                .Distinct()
-                .ToList();
-
-            var usuarios = usuarioIds.Any()
-                ? await _unitOfWork.Users.FindAsync(u => usuarioIds.Contains(u.Id))
-                : Enumerable.Empty<User>();
-
             var ticketTipo = await _unitOfWork.TicketTipos.GetByIdAsync(ticket.TicketTipoId);
-            var ticketTipoLookup = ticketTipo != null
-                ? new Dictionary<int, TicketTipo> { { ticketTipo.Id, ticketTipo } }
-                : new Dictionary<int, TicketTipo>();
-
+            User? usuario = null;
+            if (ticket.UsuarioAtribuidoId.HasValue)
+                usuario = await _unitOfWork.Users.GetByIdAsync(ticket.UsuarioAtribuidoId.Value);
             Produto? produto = null;
             if (ticket.ProdutoId.HasValue)
-            {
                 produto = await _unitOfWork.Produtos.GetByIdAsync(ticket.ProdutoId.Value);
-            }
-
             Pessoa? fornecedor = null;
             if (ticket.FornecedorId.HasValue)
-            {
                 fornecedor = await _unitOfWork.Pessoas.GetByIdAsync(ticket.FornecedorId.Value);
-            }
 
-            var clienteLookup = new Dictionary<int, Pessoa> { { cliente.Id, cliente } };
-            var usuarioLookup = usuarios.ToDictionary(u => u.Id, u => u);
-            var respostasLookup = new Dictionary<int, List<RespostaTicket>>
-            {
-                { ticket.Id, respostas.ToList() }
-            };
-            var anexosLookup = new Dictionary<int, List<TicketAnexo>>
-            {
-                { ticket.Id, anexos.ToList() }
-            };
-            var produtoLookup = produto != null
-                ? new Dictionary<int, Produto> { { produto.Id, produto } }
-                : new Dictionary<int, Produto>();
-            var fornecedorLookup = fornecedor != null
-                ? new Dictionary<int, Pessoa> { { fornecedor.Id, fornecedor } }
-                : new Dictionary<int, Pessoa>();
+            var clienteLookup = new Dictionary<int, Pessoa> { { cliente!.Id, cliente } };
+            var usuarioLookup = usuario != null ? new Dictionary<int, User> { { usuario.Id, usuario } } : new Dictionary<int, User>();
+            var ticketTipoLookup = new Dictionary<int, TicketTipo> { { ticketTipo!.Id, ticketTipo } };
+            var produtoLookup = produto != null ? new Dictionary<int, Produto> { { produto.Id, produto } } : new Dictionary<int, Produto>();
+            var fornecedorLookup = fornecedor != null ? new Dictionary<int, Pessoa> { { fornecedor.Id, fornecedor } } : new Dictionary<int, Pessoa>();
+            var respostasLookup = new Dictionary<int, List<RespostaTicket>> { { ticket.Id, new List<RespostaTicket>() } };
+            var anexosLookup = new Dictionary<int, List<TicketAnexo>> { { ticket.Id, new List<TicketAnexo>() } };
 
-            return TicketMapper.ToDto(
-                ticket,
-                clienteLookup,
-                usuarioLookup,
-                respostasLookup,
-                ticketTipoLookup,
-                produtoLookup,
-                fornecedorLookup,
-                anexosLookup);
+            return TicketMapper.ToDto(ticket, clienteLookup, usuarioLookup, respostasLookup, ticketTipoLookup, produtoLookup, fornecedorLookup, anexosLookup);
         }
     }
 }

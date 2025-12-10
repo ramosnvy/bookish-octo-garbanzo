@@ -1,7 +1,7 @@
 using MediatR;
 using Elo.Application.DTOs.Financeiro;
 using Elo.Domain.Enums;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasReceber;
 
@@ -17,49 +17,36 @@ public static class GetAllContasReceber
 
     public class Handler : IRequestHandler<Query, IEnumerable<ContaReceberDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaReceberService _contaReceberService;
+        private readonly IPessoaService _pessoaService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaReceberService contaReceberService, IPessoaService pessoaService)
         {
-            _unitOfWork = unitOfWork;
+            _contaReceberService = contaReceberService;
+            _pessoaService = pessoaService;
         }
 
         public async Task<IEnumerable<ContaReceberDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            IEnumerable<Domain.Entities.ContaReceber> contas = request.EmpresaId.HasValue
-                ? await _unitOfWork.ContasReceber.FindAsync(c => c.EmpresaId == request.EmpresaId.Value)
-                : await _unitOfWork.ContasReceber.GetAllAsync();
+            var contas = await _contaReceberService.ObterContasReceberAsync(
+                request.EmpresaId,
+                null, 
+                request.Status, 
+                request.DataInicial, 
+                request.DataFinal);
 
             var lista = contas.ToList();
+            if (!lista.Any()) return Enumerable.Empty<ContaReceberDto>();
 
-            if (request.Status.HasValue)
-            {
-                lista = lista.Where(c => c.Status == request.Status.Value).ToList();
-            }
-
-            if (request.DataInicial.HasValue)
-            {
-                lista = lista.Where(c => c.DataVencimento >= request.DataInicial.Value).ToList();
-            }
-
-            if (request.DataFinal.HasValue)
-            {
-                lista = lista.Where(c => c.DataVencimento <= request.DataFinal.Value).ToList();
-            }
-
+            var contaIds = lista.Select(c => c.Id).Distinct().ToList();
             var clientesIds = lista.Select(c => c.ClienteId).Distinct().ToList();
-            var clientes = clientesIds.Any()
-                ? await _unitOfWork.Pessoas.FindAsync(p => clientesIds.Contains(p.Id))
-                : Enumerable.Empty<Domain.Entities.Pessoa>();
+
+            var clientes = await _pessoaService.ObterPessoasPorIdsAsync(clientesIds, request.EmpresaId); 
             var clienteLookup = clientes.ToDictionary(c => c.Id, c => c.Nome);
 
-            var contaIds = lista.Select(c => c.Id).ToList();
-            var itens = contaIds.Any()
-                ? await _unitOfWork.ContaReceberItens.FindAsync(i => contaIds.Contains(i.ContaReceberId))
-                : Enumerable.Empty<Domain.Entities.ContaReceberItem>();
-            var parcelas = contaIds.Any()
-                ? await _unitOfWork.ContaReceberParcelas.FindAsync(p => contaIds.Contains(p.ContaReceberId))
-                : Enumerable.Empty<Domain.Entities.ContaReceberParcela>();
+            var itens = await _contaReceberService.ObterItensPorListaIdsAsync(contaIds);
+            var parcelas = await _contaReceberService.ObterParcelasPorListaIdsAsync(contaIds);
+
             var itensLookup = itens.GroupBy(i => i.ContaReceberId).ToDictionary(g => g.Key, g => g.ToList());
             var parcelasLookup = parcelas.GroupBy(p => p.ContaReceberId).ToDictionary(g => g.Key, g => g.OrderBy(pi => pi.Numero).ToList());
 

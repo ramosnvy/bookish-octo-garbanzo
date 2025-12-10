@@ -2,8 +2,6 @@ using MediatR;
 using Elo.Application.DTOs.Financeiro;
 using Elo.Domain.Enums;
 using Elo.Domain.Interfaces;
-using Elo.Domain.Interfaces.Repositories;
-using Elo.Domain.Entities;
 
 namespace Elo.Application.UseCases.ContasPagar;
 
@@ -17,60 +15,70 @@ public static class UpdateContaPagar
 
     public class Handler : IRequestHandler<Command, ContaPagarDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaPagarService _contaPagarService;
         private readonly IPessoaService _pessoaService;
 
-        public Handler(IUnitOfWork unitOfWork, IPessoaService pessoaService)
+        public Handler(IContaPagarService contaPagarService, IPessoaService pessoaService)
         {
-            _unitOfWork = unitOfWork;
+            _contaPagarService = contaPagarService;
             _pessoaService = pessoaService;
         }
 
         public async Task<ContaPagarDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasPagar.GetByIdAsync(request.Dto.Id) ?? throw new KeyNotFoundException("Conta não encontrada.");
-            if (conta.EmpresaId != request.EmpresaId)
+            var dto = request.Dto;
+
+            // Optional: Duplicate validations if needed, but Service should check existence.
+            // But checking items/parcelas changes "InvalidOperationException" should be in Service or here?
+            // "Esta conta já possui itens/parcelas definidas. Crie um novo plano..."
+            // This is application validation. We can check if items/parcels are present in DTO.
+            
+            if ((dto.Itens?.Any() ?? false) || dto.NumeroParcelas.HasValue)
             {
-                throw new UnauthorizedAccessException("Conta pertence a outra empresa.");
+                 // Check if original has items? No, logic was "If you try to set/change items in UpdateDto, throw".
+                 // Assuming Dto logic.
+                 throw new InvalidOperationException("Esta conta já possui itens/parcelas definidas. Crie um novo plano para alterar composição.");
             }
 
-            if ((request.Dto.Itens?.Any() ?? false) || request.Dto.NumeroParcelas.HasValue)
-            {
-                throw new InvalidOperationException("Esta conta já possui itens/parcelas definidas. Crie um novo plano para alterar composição.");
-            }
+            // We need to fetch original to check if Value changed, in original handler.
+            var original = await _contaPagarService.ObterContaPagarPorIdAsync(dto.Id, request.EmpresaId);
+            if (original == null) throw new KeyNotFoundException("Conta não encontrada.");
 
-            if (request.Dto.Valor != conta.Valor)
+            if (dto.Valor != original.Valor)
             {
                 throw new InvalidOperationException("Valor total não pode ser alterado após gerar parcelas.");
             }
 
-            var fornecedor = await _pessoaService.ObterPessoaPorIdAsync(request.Dto.FornecedorId, PessoaTipo.Fornecedor, request.EmpresaId);
-            if (fornecedor == null)
+            var conta = await _contaPagarService.AtualizarContaPagarAsync(
+                dto.Id,
+                dto.FornecedorId,
+                dto.Descricao,
+                dto.Valor,
+                dto.DataVencimento,
+                dto.DataPagamento,
+                dto.Status,
+                dto.Categoria,
+                dto.IsRecorrente,
+                request.EmpresaId,
+                dto.AfiliadoId);
+
+            string fornecedorNome = string.Empty;
+            if (conta.FornecedorId.HasValue)
             {
-                throw new KeyNotFoundException("Fornecedor não encontrado para esta empresa.");
+                var fornecedor = await _pessoaService.ObterPessoaPorIdAsync(conta.FornecedorId.Value, PessoaTipo.Fornecedor, request.EmpresaId);
+                fornecedorNome = fornecedor?.Nome ?? string.Empty;
             }
 
-            conta.FornecedorId = request.Dto.FornecedorId;
-            conta.Descricao = request.Dto.Descricao;
-            conta.Valor = request.Dto.Valor;
-            conta.DataVencimento = EnsureUtc(request.Dto.DataVencimento);
-            conta.DataPagamento = EnsureUtcNullable(request.Dto.DataPagamento);
-            conta.Status = request.Dto.Status;
-            conta.Categoria = request.Dto.Categoria;
-            conta.UpdatedAt = DateTime.UtcNow;
-
-            await _unitOfWork.ContasPagar.UpdateAsync(conta);
-            await _unitOfWork.SaveChangesAsync();
-
-            var itens = await _unitOfWork.ContaPagarItens.FindAsync(i => i.ContaPagarId == conta.Id);
-            var parcelas = await _unitOfWork.ContaPagarParcelas.FindAsync(p => p.ContaPagarId == conta.Id);
+            var itens = await _contaPagarService.ObterItensPorContaIdAsync(conta.Id);
+            var parcelas = await _contaPagarService.ObterParcelasPorContaIdAsync(conta.Id);
 
             return new ContaPagarDto
             {
                 Id = conta.Id,
                 EmpresaId = conta.EmpresaId,
                 FornecedorId = conta.FornecedorId,
-                FornecedorNome = fornecedor.Nome,
+                AfiliadoId = conta.AfiliadoId,
+                FornecedorNome = fornecedorNome,
                 Descricao = conta.Descricao,
                 Valor = conta.Valor,
                 DataVencimento = conta.DataVencimento,
@@ -102,20 +110,6 @@ public static class UpdateContaPagar
                     Status = p.Status
                 })
             };
-        }
-        private static DateTime EnsureUtc(DateTime value)
-        {
-            return value.Kind switch
-            {
-                DateTimeKind.Utc => value,
-                DateTimeKind.Local => value.ToUniversalTime(),
-                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
-            };
-        }
-
-        private static DateTime? EnsureUtcNullable(DateTime? value)
-        {
-            return value.HasValue ? EnsureUtc(value.Value) : null;
         }
     }
 }

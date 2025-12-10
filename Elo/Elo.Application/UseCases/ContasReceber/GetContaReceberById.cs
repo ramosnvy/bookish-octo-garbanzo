@@ -1,6 +1,7 @@
 using MediatR;
 using Elo.Application.DTOs.Financeiro;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Enums;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasReceber;
 
@@ -14,29 +15,30 @@ public static class GetContaReceberById
 
     public class Handler : IRequestHandler<Query, ContaReceberDto?>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaReceberService _contaReceberService;
+        private readonly IPessoaService _pessoaService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaReceberService contaReceberService, IPessoaService pessoaService)
         {
-            _unitOfWork = unitOfWork;
+            _contaReceberService = contaReceberService;
+            _pessoaService = pessoaService;
         }
 
         public async Task<ContaReceberDto?> Handle(Query request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasReceber.GetByIdAsync(request.Id);
+            var conta = await _contaReceberService.ObterContaReceberPorIdAsync(request.Id, request.EmpresaId ?? 0);
             if (conta == null)
             {
                 return null;
             }
 
-            if (request.EmpresaId.HasValue && conta.EmpresaId != request.EmpresaId.Value)
-            {
-                return null;
-            }
+            var cliente = await _pessoaService.ObterPessoaPorIdAsync(
+                conta.ClienteId,
+                PessoaTipo.Cliente,
+                conta.EmpresaId);
 
-            var cliente = await _unitOfWork.Pessoas.GetByIdAsync(conta.ClienteId);
-            var itens = await _unitOfWork.ContaReceberItens.FindAsync(i => i.ContaReceberId == conta.Id);
-            var parcelas = await _unitOfWork.ContaReceberParcelas.FindAsync(p => p.ContaReceberId == conta.Id);
+            var itens = await _contaReceberService.ObterItensPorContaIdAsync(conta.Id);
+            var parcelas = await _contaReceberService.ObterParcelasPorContaIdAsync(conta.Id);
 
             return new ContaReceberDto
             {

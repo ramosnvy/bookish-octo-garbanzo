@@ -1,7 +1,5 @@
 using MediatR;
 using Elo.Application.DTOs.Financeiro;
-using Elo.Domain.Entities;
-using Elo.Domain.Enums;
 using Elo.Domain.Interfaces;
 using Elo.Domain.Interfaces.Repositories;
 
@@ -17,113 +15,79 @@ public static class CreateContaReceber
 
     public class Handler : IRequestHandler<Command, ContaReceberDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaReceberService _contaReceberService;
         private readonly IPessoaService _pessoaService;
+        private readonly IUnitOfWork _unitOfWork;
             
-        public Handler(IUnitOfWork unitOfWork, IPessoaService pessoaService)
+        public Handler(
+            IContaReceberService contaReceberService,
+            IPessoaService pessoaService,
+            IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            _contaReceberService = contaReceberService;
             _pessoaService = pessoaService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ContaReceberDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var cliente = await _pessoaService.ObterPessoaPorIdAsync(request.Dto.ClienteId, PessoaTipo.Cliente, request.EmpresaId);
-            if (cliente == null)
-            {
-                throw new KeyNotFoundException("Cliente não encontrado para esta empresa.");
-            }
+            var dto = request.Dto;
 
-            var itens = (request.Dto.Itens ?? Enumerable.Empty<ContaFinanceiraItemInputDto>())
+            // Processar itens
+            var itens = (dto.Itens ?? Enumerable.Empty<ContaFinanceiraItemInputDto>())
                 .Where(i => i != null && i.Valor > 0 && !string.IsNullOrWhiteSpace(i.Descricao))
+                .Select(i => new ContaReceberItemInput(i.Descricao, i.Valor))
                 .ToList();
-            var totalItens = itens.Sum(i => i.Valor);
-            var valorTotal = totalItens > 0 ? totalItens : request.Dto.Valor;
-            if (valorTotal <= 0)
-            {
-                throw new InvalidOperationException("Informe o valor total ou adicione itens com valores válidos.");
-            }
 
-            var numeroParcelas = request.Dto.NumeroParcelas.HasValue && request.Dto.NumeroParcelas.Value > 0 ? request.Dto.NumeroParcelas.Value : 1;
-            var intervaloDias = request.Dto.IntervaloDias.HasValue && request.Dto.IntervaloDias.Value > 0 ? request.Dto.IntervaloDias.Value : 30;
-            var dataVencimento = EnsureUtc(request.Dto.DataVencimento);
-            var dataRecebimento = EnsureUtcNullable(request.Dto.DataRecebimento);
+            // Criar conta via service
+            var conta = await _contaReceberService.CriarContaReceberAsync(
+                dto.ClienteId,
+                dto.Descricao,
+                dto.Valor,
+                dto.DataVencimento,
+                dto.DataRecebimento,
+                dto.Status,
+                dto.FormaPagamento,
+                dto.NumeroParcelas,
+                dto.IntervaloDias,
+                request.EmpresaId,
+                itens);
 
-            var conta = new ContaReceber
-            {
-                EmpresaId = request.EmpresaId,
-                ClienteId = request.Dto.ClienteId,
-                Descricao = request.Dto.Descricao,
-                Valor = valorTotal,
-                DataVencimento = dataVencimento,
-                DataRecebimento = dataRecebimento,
-                Status = request.Dto.Status,
-                FormaPagamento = request.Dto.FormaPagamento,
-                IsRecorrente = false,
-                TotalParcelas = numeroParcelas,
-                IntervaloDias = intervaloDias,
-                CreatedAt = DateTime.UtcNow
-            };
+            // Buscar dados relacionados para o DTO
+            var cliente = await _pessoaService.ObterPessoaPorIdAsync(
+                conta.ClienteId,
+                Domain.Enums.PessoaTipo.Cliente,
+                request.EmpresaId);
 
-            await _unitOfWork.ContasReceber.AddAsync(conta);
-            await _unitOfWork.SaveChangesAsync();
-
-            if (itens.Any())
-            {
-                foreach (var item in itens)
-                {
-                    await _unitOfWork.ContaReceberItens.AddAsync(new ContaReceberItem
-                    {
-                        EmpresaId = request.EmpresaId,
-                        ContaReceberId = conta.Id,
-                        ProdutoId = null,
-                        ProdutoModuloIds = new List<int>(),
-                        Descricao = string.IsNullOrWhiteSpace(item.Descricao) ? conta.Descricao : item.Descricao,
-                        Valor = item.Valor
-                    });
-                }
-                await _unitOfWork.SaveChangesAsync();
-            }
-
-            var parcelas = GerarParcelas(conta, numeroParcelas, intervaloDias, valorTotal);
-            foreach (var parcela in parcelas)
-            {
-                await _unitOfWork.ContaReceberParcelas.AddAsync(parcela);
-            }
-            if (parcelas.Any())
-            {
-                await _unitOfWork.SaveChangesAsync();
-            }
+            var contaItens = await _unitOfWork.ContaReceberItens.FindAsync(i => i.ContaReceberId == conta.Id);
+            var parcelas = await _unitOfWork.ContaReceberParcelas.FindAsync(p => p.ContaReceberId == conta.Id);
 
             return new ContaReceberDto
             {
                 Id = conta.Id,
                 EmpresaId = conta.EmpresaId,
                 ClienteId = conta.ClienteId,
-                ClienteNome = cliente.Nome,
+                ClienteNome = cliente?.Nome ?? string.Empty,
                 Descricao = conta.Descricao,
                 Valor = conta.Valor,
                 DataVencimento = conta.DataVencimento,
                 DataRecebimento = conta.DataRecebimento,
                 Status = conta.Status,
                 FormaPagamento = conta.FormaPagamento,
-                IsRecorrente = false,
+                IsRecorrente = conta.IsRecorrente,
                 TotalParcelas = conta.TotalParcelas,
                 IntervaloDias = conta.IntervaloDias,
                 CreatedAt = conta.CreatedAt,
                 UpdatedAt = conta.UpdatedAt,
-                Itens = itens.Select(i =>
+                Itens = contaItens.Select(i => new ContaReceberItemDto
                 {
-                    return new ContaReceberItemDto
-                    {
-                        Id = 0,
-                        ContaReceberId = conta.Id,
-                        Descricao = string.IsNullOrWhiteSpace(i.Descricao) ? conta.Descricao : i.Descricao,
-                        Valor = i.Valor,
-                        ProdutoId = null,
-                        ProdutoModuloId = null,
-                        ProdutoModuloIds = new List<int>()
-                    };
+                    Id = i.Id,
+                    ContaReceberId = i.ContaReceberId,
+                    Descricao = i.Descricao,
+                    Valor = i.Valor,
+                    ProdutoId = i.ProdutoId,
+                    ProdutoModuloId = null,
+                    ProdutoModuloIds = i.ProdutoModuloIds
                 }),
                 Parcelas = parcelas.Select(p => new ContaReceberParcelaDto
                 {
@@ -135,47 +99,6 @@ public static class CreateContaReceber
                     Status = p.Status
                 })
             };
-        }
-
-        private static List<ContaReceberParcela> GerarParcelas(ContaReceber conta, int numeroParcelas, int intervaloDias, decimal valorTotal)
-        {
-            var parcelas = new List<ContaReceberParcela>();
-            var valorBase = Math.Round(valorTotal / numeroParcelas, 2, MidpointRounding.AwayFromZero);
-            decimal acumulado = 0;
-
-            for (int i = 1; i <= numeroParcelas; i++)
-            {
-                var valor = i == numeroParcelas ? valorTotal - acumulado : valorBase;
-                acumulado += valor;
-                var vencimento = conta.DataVencimento.AddDays(intervaloDias * (i - 1));
-
-                parcelas.Add(new ContaReceberParcela
-                {
-                    EmpresaId = conta.EmpresaId,
-                    ContaReceberId = conta.Id,
-                    Numero = i,
-                    Valor = valor,
-                    DataVencimento = vencimento,
-                    Status = ContaStatus.Pendente
-                });
-            }
-
-            return parcelas;
-        }
-
-        private static DateTime EnsureUtc(DateTime value)
-        {
-            return value.Kind switch
-            {
-                DateTimeKind.Utc => value,
-                DateTimeKind.Local => value.ToUniversalTime(),
-                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
-            };
-        }
-
-        private static DateTime? EnsureUtcNullable(DateTime? value)
-        {
-            return value.HasValue ? EnsureUtc(value.Value) : null;
         }
     }
 }

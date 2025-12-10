@@ -146,6 +146,23 @@ public class ProdutoService : IProdutoService
         return produtos;
     }
 
+    public async Task<IEnumerable<Produto>> ObterProdutosPorIdsAsync(IEnumerable<int> ids)
+    {
+        if (!ids.Any()) return Enumerable.Empty<Produto>();
+        var idList = ids.Distinct().ToList();
+        var produtos = (await _unitOfWork.Produtos.FindAsync(p => idList.Contains(p.Id))).ToList();
+        await CarregarFornecedoresAsync(produtos, null);
+        await CarregarModulosAsync(produtos);
+        return produtos;
+    }
+
+    public async Task<IEnumerable<ProdutoModulo>> ObterModulosPorIdsAsync(IEnumerable<int> ids)
+    {
+        if (!ids.Any()) return Enumerable.Empty<ProdutoModulo>();
+        var idList = ids.Distinct().ToList();
+        return await _unitOfWork.ProdutoModulos.FindAsync(m => idList.Contains(m.Id));
+    }
+
     public decimal CalcularMargemLucro(decimal valorCusto, decimal valorRevenda)
     {
         if (valorCusto <= 0 || valorRevenda <= 0)

@@ -10,4 +10,5 @@ public interface IPessoaService
     Task<bool> DeletarPessoaAsync(int id, PessoaTipo tipo, int empresaId);
     Task<Pessoa?> ObterPessoaPorIdAsync(int id, PessoaTipo tipo, int? empresaId = null);
     Task<IEnumerable<Pessoa>> ObterPessoasAsync(PessoaTipo tipo, int? empresaId = null);
+    Task<IEnumerable<Pessoa>> ObterPessoasPorIdsAsync(IEnumerable<int> ids, int? empresaId = null);
 }

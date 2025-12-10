@@ -1,8 +1,7 @@
 using MediatR;
 using Elo.Application.DTOs.Financeiro;
-using Elo.Domain.Entities;
 using Elo.Domain.Enums;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasPagar;
 
@@ -18,40 +17,30 @@ public static class GetContasPagarCalendar
 
     public class Handler : IRequestHandler<Query, IEnumerable<ContaPagarCalendarEventDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaPagarService _contaPagarService;
+        private readonly IPessoaService _pessoaService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaPagarService contaPagarService, IPessoaService pessoaService)
         {
-            _unitOfWork = unitOfWork;
+            _contaPagarService = contaPagarService;
+            _pessoaService = pessoaService;
         }
 
         public async Task<IEnumerable<ContaPagarCalendarEventDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var contas = request.EmpresaId.HasValue
-                ? await _unitOfWork.ContasPagar.FindAsync(c => c.EmpresaId == request.EmpresaId.Value)
-                : await _unitOfWork.ContasPagar.GetAllAsync();
+            var contas = await _contaPagarService.ObterContasPagarAsync(
+                request.EmpresaId,
+                null,
+                request.Status,
+                null,
+                request.DataInicial,
+                request.DataFinal);
 
             var lista = contas.ToList();
+            if (!lista.Any()) return Enumerable.Empty<ContaPagarCalendarEventDto>();
 
-            if (request.Status.HasValue)
-            {
-                lista = lista.Where(c => c.Status == request.Status.Value).ToList();
-            }
-
-            if (request.DataInicial.HasValue)
-            {
-                lista = lista.Where(c => c.DataVencimento >= request.DataInicial.Value).ToList();
-            }
-
-            if (request.DataFinal.HasValue)
-            {
-                lista = lista.Where(c => c.DataVencimento <= request.DataFinal.Value).ToList();
-            }
-
-            var fornecedoresIds = lista.Select(c => c.FornecedorId).Distinct().ToList();
-            var fornecedores = fornecedoresIds.Any()
-                ? await _unitOfWork.Pessoas.FindAsync(p => fornecedoresIds.Contains(p.Id))
-                : Enumerable.Empty<Pessoa>();
+            var fornecedoresIds = lista.Where(c => c.FornecedorId.HasValue).Select(c => c.FornecedorId!.Value).Distinct().ToList();
+            var fornecedores = await _pessoaService.ObterPessoasPorIdsAsync(fornecedoresIds, request.EmpresaId ?? 0);
             var fornecedoresLookup = fornecedores.ToDictionary(f => f.Id, f => f.Nome);
 
             var grupos = lista
@@ -69,7 +58,7 @@ public static class GetContasPagarCalendar
                         DataVencimento = c.DataVencimento,
                         Status = c.Status,
                         FornecedorId = c.FornecedorId,
-                        FornecedorNome = fornecedoresLookup.TryGetValue(c.FornecedorId, out var nome) ? nome : string.Empty
+                        FornecedorNome = (c.FornecedorId.HasValue && fornecedoresLookup.TryGetValue(c.FornecedorId.Value, out var nome)) ? nome : string.Empty
                     })
                 });
 

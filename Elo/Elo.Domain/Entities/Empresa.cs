@@ -15,4 +15,5 @@ public class Empresa
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<User> Usuarios { get; set; } = new List<User>();
+    public virtual EmpresaConfiguracao? Configuracao { get; set; }
 }

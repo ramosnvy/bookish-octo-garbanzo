@@ -153,6 +153,18 @@ public class PessoaService : IPessoaService
         return pessoas;
     }
 
+    public async Task<IEnumerable<Pessoa>> ObterPessoasPorIdsAsync(IEnumerable<int> ids, int? empresaId = null)
+    {
+        if (!ids.Any()) return Enumerable.Empty<Pessoa>();
+
+        var idList = ids.Distinct().ToList();
+        var pessoas = (await _unitOfWork.Pessoas.FindAsync(p => idList.Contains(p.Id) && (!empresaId.HasValue || p.EmpresaId == empresaId.Value))).ToList();
+
+        // Could populate adresses/categories if needed, similar to ObterPessoasAsync
+        // For simple listing names, basic properties are enough.
+        return pessoas;
+    }
+
     private async Task ValidarDuplicidadesAsync(string documento, string email, int empresaId, int? pessoaId = null)
     {
         var documentoExistente = await _unitOfWork.Pessoas.FirstOrDefaultAsync(p => p.Documento == documento && p.EmpresaId == empresaId);

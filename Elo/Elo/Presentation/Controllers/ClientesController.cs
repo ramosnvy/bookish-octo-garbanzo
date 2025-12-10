@@ -1,9 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Elo.Application.Common;
 using Elo.Application.DTOs.Cliente;
 using Elo.Application.UseCases.Clientes;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Presentation.Controllers;
 
@@ -21,6 +22,34 @@ public class ClientesController : ControllerBase
         _empresaContext = empresaContext;
     }
 
+    /// <summary>
+    /// Obtém todos os clientes com paginação (otimizado para listagens)
+    /// </summary>
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<ClienteListDto>>> GetAllPaged(
+        [FromQuery] string? search,
+        [FromQuery] Domain.Enums.Status? status,
+        [FromQuery] int? empresaId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var resolvedEmpresa = await _empresaContext.ResolveEmpresaAsync(empresaId, HttpContext.RequestAborted);
+        var query = new GetAllClientesPaged.Query
+        {
+            EmpresaId = resolvedEmpresa,
+            Search = search,
+            Status = status,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtém todos os clientes (completos, sem paginação - use apenas quando necessário)
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ClienteDto>>> GetAll([FromQuery] int? page, [FromQuery] int? pageSize, [FromQuery] int? empresaId)
     {

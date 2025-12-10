@@ -1,7 +1,7 @@
 using MediatR;
 using Elo.Application.DTOs.Financeiro;
 using Elo.Domain.Enums;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasReceber;
 
@@ -18,51 +18,26 @@ public static class UpdateContaReceberParcelaStatus
 
     public class Handler : IRequestHandler<Command, ContaReceberParcelaDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaReceberService _contaReceberService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaReceberService contaReceberService)
         {
-            _unitOfWork = unitOfWork;
+            _contaReceberService = contaReceberService;
         }
 
         public async Task<ContaReceberParcelaDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasReceber.GetByIdAsync(request.ContaId)
-                ?? throw new KeyNotFoundException("Conta não encontrada.");
-            if (conta.EmpresaId != request.EmpresaId)
-            {
-                throw new UnauthorizedAccessException("Conta pertence a outra empresa.");
-            }
-
-            var parcela = await _unitOfWork.ContaReceberParcelas.GetByIdAsync(request.ParcelaId)
-                ?? throw new KeyNotFoundException("Parcela não encontrada.");
-            if (parcela.ContaReceberId != conta.Id)
-            {
-                throw new InvalidOperationException("Parcela não pertence à conta informada.");
-            }
-
-            parcela.Status = request.Status;
-            parcela.DataRecebimento = request.Status == ContaStatus.Pago
-                ? EnsureUtcNullable(request.DataRecebimento) ?? DateTime.UtcNow
-                : null;
-            parcela.UpdatedAt = DateTime.UtcNow;
-
-            await _unitOfWork.ContaReceberParcelas.UpdateAsync(parcela);
-
-            // Atualiza o status da conta quando todas as parcelas estiverem pagas.
-            if (request.Status == ContaStatus.Pago)
-            {
-                var parcelasConta = await _unitOfWork.ContaReceberParcelas.FindAsync(p => p.ContaReceberId == conta.Id);
-                if (parcelasConta.All(p => p.Status == ContaStatus.Pago))
-                {
-                    conta.Status = ContaStatus.Pago;
-                    conta.DataRecebimento = parcela.DataRecebimento;
-                    conta.UpdatedAt = DateTime.UtcNow;
-                    await _unitOfWork.ContasReceber.UpdateAsync(conta);
-                }
-            }
-
-            await _unitOfWork.SaveChangesAsync();
+            // O Service já trata a lógica de atualizar o status da parcela 
+            // e atualizar a conta se todas as parcelas estiverem pagas?
+            // Eu preciso garantir que o Service faça isso.
+            // O IContaReceberService.AtualizarStatusParcelaAsync foi definido.
+            // Preciso verificar se a implementação dele trata a conta pai.
+            
+            var parcela = await _contaReceberService.AtualizarStatusParcelaAsync(
+                request.ParcelaId,
+                request.Status,
+                request.DataRecebimento,
+                request.EmpresaId);
 
             return new ContaReceberParcelaDto
             {
@@ -73,11 +48,6 @@ public static class UpdateContaReceberParcelaStatus
                 DataRecebimento = parcela.DataRecebimento,
                 Status = parcela.Status
             };
-        }
-
-        private static DateTime? EnsureUtcNullable(DateTime? value)
-        {
-            return value?.ToUniversalTime();
         }
     }
 }

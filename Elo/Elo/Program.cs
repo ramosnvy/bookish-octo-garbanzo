@@ -9,7 +9,6 @@ using Elo.Infrastructure.Repositories;
 using Elo.Infrastructure.Services;
 using Elo.Infrastructure.Middleware;
 using Elo.Presentation.Configuration;
-using Elo.Application.Interfaces;
 using Elo.Application.Behaviors;
 using Elo.Application.Mappers;
 using Elo.Application.UseCases.Clientes;
@@ -23,10 +22,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.Configure<JsonOptions>(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
@@ -63,6 +58,16 @@ builder.Services.AddScoped<IFornecedorCategoriaService, FornecedorCategoriaServi
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 builder.Services.AddScoped<IEmpresaContextService, EmpresaContextService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IAfiliadoService, AfiliadoService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IHistoriaService, HistoriaService>();
+builder.Services.AddScoped<IHistoriaTipoService, HistoriaTipoService>();
+builder.Services.AddScoped<IHistoriaStatusService, HistoriaStatusService>();
+builder.Services.AddScoped<ITicketTipoService, TicketTipoService>();
+builder.Services.AddScoped<IContaReceberService, ContaReceberService>();
+builder.Services.AddScoped<IContaPagarService, ContaPagarService>();
+builder.Services.AddScoped<IAssinaturaService, AssinaturaService>();
+builder.Services.AddScoped<IEmpresaFormaPagamentoService, EmpresaFormaPagamentoService>();
 
 // Application Services
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -70,6 +75,7 @@ builder.Services.AddScoped<IClienteMapper, ClienteMapper>();
 builder.Services.AddScoped<IUserMapper, UserMapper>();
 builder.Services.AddScoped<IFornecedorMapper, FornecedorMapper>();
 builder.Services.AddScoped<IProdutoMapper, ProdutoMapper>();
+builder.Services.AddScoped<IAfiliadoMapper, AfiliadoMapper>();
 
 // MediatR
 var applicationAssembly = typeof(CreateCliente.Command).Assembly;

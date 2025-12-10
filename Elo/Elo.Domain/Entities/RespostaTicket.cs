@@ -8,8 +8,10 @@ public class RespostaTicket
     public string Mensagem { get; set; } = string.Empty;
     public DateTime DataResposta { get; set; } = DateTime.UtcNow;
     public bool IsInterna { get; set; } = false;
+    public int EmpresaId { get; set; }
 
     // Navigation properties
     public virtual Ticket Ticket { get; set; } = null!;
     public virtual User Usuario { get; set; } = null!;
+    public virtual Empresa Empresa { get; set; } = null!;
 }

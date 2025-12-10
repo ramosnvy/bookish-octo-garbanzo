@@ -16,54 +16,54 @@ public static class UpdateContaReceber
 
     public class Handler : IRequestHandler<Command, ContaReceberDto>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaReceberService _contaReceberService;
         private readonly IPessoaService _pessoaService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public Handler(IUnitOfWork unitOfWork, IPessoaService pessoaService)
+        public Handler(
+            IContaReceberService contaReceberService,
+            IPessoaService pessoaService,
+            IUnitOfWork unitOfWork)
         {
-            _unitOfWork = unitOfWork;
+            _contaReceberService = contaReceberService;
             _pessoaService = pessoaService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ContaReceberDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasReceber.GetByIdAsync(request.Dto.Id) ?? throw new KeyNotFoundException("Conta não encontrada.");
-            if (conta.EmpresaId != request.EmpresaId)
-            {
-                throw new UnauthorizedAccessException("Conta pertence a outra empresa.");
-            }
+            var dto = request.Dto;
 
-            if ((request.Dto.Itens?.Any() ?? false) || request.Dto.NumeroParcelas.HasValue)
+            // Validações de negócio específicas do update
+            var contaExistente = await _contaReceberService.ObterContaReceberPorIdAsync(dto.Id, request.EmpresaId);
+            if (contaExistente == null)
+                throw new KeyNotFoundException("Conta não encontrada.");
+
+            if ((dto.Itens?.Any() ?? false) || dto.NumeroParcelas.HasValue)
             {
                 throw new InvalidOperationException("Esta conta já possui parcelas definidas. Para alterar itens, gere uma nova cobrança.");
             }
 
-            if (request.Dto.Valor != conta.Valor)
+            if (dto.Valor != contaExistente.Valor)
             {
                 throw new InvalidOperationException("Valor total não pode ser alterado após gerar parcelas.");
             }
 
-            var cliente = await _pessoaService.ObterPessoaPorIdAsync(request.Dto.ClienteId, PessoaTipo.Cliente, request.EmpresaId);
-            if (cliente == null)
-            {
-                throw new KeyNotFoundException("Cliente não encontrado para esta empresa.");
-            }
+            // Atualizar via service
+            var conta = await _contaReceberService.AtualizarContaReceberAsync(
+                dto.Id,
+                dto.ClienteId,
+                dto.Descricao,
+                dto.Valor,
+                dto.DataVencimento,
+                dto.DataRecebimento,
+                dto.Status,
+                dto.FormaPagamento,
+                request.EmpresaId);
 
-            var normalizedDataRecebimento = EnsureUtcNullable(request.Dto.DataRecebimento);
-
-            conta.ClienteId = request.Dto.ClienteId;
-            conta.Descricao = request.Dto.Descricao;
-            conta.Valor = request.Dto.Valor;
-            conta.DataVencimento = EnsureUtc(request.Dto.DataVencimento);
-            conta.DataRecebimento = normalizedDataRecebimento;
-            conta.Status = request.Dto.Status;
-            conta.FormaPagamento = request.Dto.FormaPagamento;
-            conta.IsRecorrente = false;
-            conta.UpdatedAt = DateTime.UtcNow;
-
+            // Atualizar parcelas se necessário
             var parcelas = (await _unitOfWork.ContaReceberParcelas.FindAsync(p => p.ContaReceberId == conta.Id)).ToList();
-
-            await _unitOfWork.ContasReceber.UpdateAsync(conta);
+            var normalizedDataRecebimento = EnsureUtcNullable(dto.DataRecebimento);
 
             if (parcelas.Any())
             {
@@ -75,10 +75,11 @@ public static class UpdateContaReceber
                         : null;
                     await _unitOfWork.ContaReceberParcelas.UpdateAsync(parcela);
                 }
+                await _unitOfWork.SaveChangesAsync();
             }
 
-            await _unitOfWork.SaveChangesAsync();
-
+            // Buscar dados para o DTO
+            var cliente = await _pessoaService.ObterPessoaPorIdAsync(conta.ClienteId, PessoaTipo.Cliente, request.EmpresaId);
             var itens = await _unitOfWork.ContaReceberItens.FindAsync(i => i.ContaReceberId == conta.Id);
 
             return new ContaReceberDto
@@ -86,7 +87,7 @@ public static class UpdateContaReceber
                 Id = conta.Id,
                 EmpresaId = conta.EmpresaId,
                 ClienteId = conta.ClienteId,
-                ClienteNome = cliente.Nome,
+                ClienteNome = cliente?.Nome ?? string.Empty,
                 Descricao = conta.Descricao,
                 Valor = conta.Valor,
                 DataVencimento = conta.DataVencimento,
@@ -119,19 +120,17 @@ public static class UpdateContaReceber
                 })
             };
         }
-        private static DateTime EnsureUtc(DateTime value)
-        {
-            return value.Kind switch
-            {
-                DateTimeKind.Utc => value,
-                DateTimeKind.Local => value.ToUniversalTime(),
-                _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
-            };
-        }
 
         private static DateTime? EnsureUtcNullable(DateTime? value)
         {
-            return value.HasValue ? EnsureUtc(value.Value) : null;
+            if (!value.HasValue) return null;
+            
+            return value.Value.Kind switch
+            {
+                DateTimeKind.Utc => value.Value,
+                DateTimeKind.Local => value.Value.ToUniversalTime(),
+                _ => DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)
+            };
         }
     }
 }

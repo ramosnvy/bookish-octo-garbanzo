@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MediatR;
 using Elo.Application.DTOs.Empresa;
 using Elo.Domain.Interfaces;
@@ -31,23 +30,18 @@ public static class UpdateEmpresa
 
         public async Task<EmpresaDto> Handle(Command request, CancellationToken cancellationToken)
         {
-            var empresa = await _empresaService.ObterPorIdAsync(request.Id);
-            if (empresa == null)
-            {
-                throw new KeyNotFoundException($"Empresa com ID {request.Id} não encontrada");
-            }
-
-            empresa.RazaoSocial = request.RazaoSocial;
-            empresa.NomeFantasia = request.NomeFantasia;
-            empresa.Cnpj = request.Cnpj;
-            empresa.Ie = request.Ie;
-            empresa.Email = request.Email;
-            empresa.Telefone = request.Telefone;
-            empresa.Endereco = request.Endereco;
-            empresa.Ativo = request.Ativo;
-            empresa.UpdatedAt = DateTime.UtcNow;
-
-            var atualizada = await _empresaService.AtualizarEmpresaAsync(empresa);
+            // Service handles logic
+            var atualizada = await _empresaService.AtualizarEmpresaAsync(
+                request.Id,
+                request.RazaoSocial,
+                request.NomeFantasia,
+                request.Cnpj,
+                request.Ie,
+                request.Email,
+                request.Telefone,
+                request.Endereco,
+                request.Ativo
+            );
 
             return new EmpresaDto
             {

@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 using Elo.Domain.Interfaces.Repositories;
 using Microsoft.AspNetCore.Http;
 

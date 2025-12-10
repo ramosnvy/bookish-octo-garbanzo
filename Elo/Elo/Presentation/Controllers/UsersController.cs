@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Elo.Application.DTOs.User;
 using Elo.Application.UseCases.Users;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Presentation.Controllers;
 

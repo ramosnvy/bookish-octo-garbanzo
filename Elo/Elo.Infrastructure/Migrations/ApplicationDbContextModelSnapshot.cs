@@ -23,6 +23,159 @@ namespace Elo.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Elo.Domain.Entities.Afiliado", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Documento")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<decimal>("Porcentagem")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Telefone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Documento")
+                        .IsUnique();
+
+                    b.HasIndex("EmpresaId", "Email")
+                        .IsUnique();
+
+                    b.ToTable("Afiliados");
+                });
+
+            modelBuilder.Entity("Elo.Domain.Entities.Assinatura", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AfiliadoId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Ativo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DataFim")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataInicio")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FormaPagamento")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("GerarFinanceiro")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("GerarImplantacao")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("IntervaloDias")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRecorrente")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("RecorrenciaQtde")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AfiliadoId");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("EmpresaId");
+
+                    b.ToTable("Assinaturas");
+                });
+
+            modelBuilder.Entity("Elo.Domain.Entities.AssinaturaItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssinaturaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProdutoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ProdutoModuloId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssinaturaId");
+
+                    b.HasIndex("ProdutoId");
+
+                    b.HasIndex("ProdutoModuloId");
+
+                    b.ToTable("AssinaturaItens");
+                });
+
             modelBuilder.Entity("Elo.Domain.Entities.ContaPagar", b =>
                 {
                     b.Property<int>("Id")
@@ -30,6 +183,12 @@ namespace Elo.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AfiliadoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AssinaturaId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Categoria")
                         .IsRequired()
@@ -56,7 +215,7 @@ namespace Elo.Migrations
                     b.Property<int>("EmpresaId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("FornecedorId")
+                    b.Property<int?>("FornecedorId")
                         .HasColumnType("integer");
 
                     b.Property<int>("IntervaloDias")
@@ -78,6 +237,8 @@ namespace Elo.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AfiliadoId");
 
                     b.HasIndex("FornecedorId");
 
@@ -176,6 +337,9 @@ namespace Elo.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AssinaturaId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("integer");
@@ -367,6 +531,82 @@ namespace Elo.Migrations
                     b.ToTable("Empresas");
                 });
 
+            modelBuilder.Entity("Elo.Domain.Entities.EmpresaConfiguracao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaPagamentoAfiliado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("JurosTipo")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("JurosValor")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("MoraTipo")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MoraValor")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId")
+                        .IsUnique();
+
+                    b.ToTable("EmpresaConfiguracoes");
+                });
+
+            modelBuilder.Entity("Elo.Domain.Entities.EmpresaFormaPagamento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AVista")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Ativo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FormaPagamento")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "FormaPagamento")
+                        .IsUnique();
+
+                    b.ToTable("EmpresaFormasPagamento");
+                });
+
             modelBuilder.Entity("Elo.Domain.Entities.FornecedorCategoria", b =>
                 {
                     b.Property<int>("Id")
@@ -414,11 +654,17 @@ namespace Elo.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DataFim")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("DataFinalizacao")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DataInicio")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("HistoriaStatusId")
                         .HasColumnType("integer");
@@ -445,6 +691,8 @@ namespace Elo.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("HistoriaStatusId");
 
@@ -855,6 +1103,9 @@ namespace Elo.Migrations
                     b.Property<DateTime>("DataResposta")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsInterna")
                         .HasColumnType("boolean");
 
@@ -870,6 +1121,8 @@ namespace Elo.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("TicketId");
 
@@ -902,6 +1155,9 @@ namespace Elo.Migrations
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("FornecedorId")
                         .HasColumnType("integer");
@@ -939,6 +1195,8 @@ namespace Elo.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
+
+                    b.HasIndex("EmpresaId");
 
                     b.HasIndex("FornecedorId");
 
@@ -1070,6 +1328,11 @@ namespace Elo.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1083,8 +1346,76 @@ namespace Elo.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Elo.Domain.Entities.Afiliado", b =>
+                {
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("Elo.Domain.Entities.Assinatura", b =>
+                {
+                    b.HasOne("Elo.Domain.Entities.Afiliado", "Afiliado")
+                        .WithMany()
+                        .HasForeignKey("AfiliadoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Elo.Domain.Entities.Pessoa", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Afiliado");
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("Elo.Domain.Entities.AssinaturaItem", b =>
+                {
+                    b.HasOne("Elo.Domain.Entities.Assinatura", "Assinatura")
+                        .WithMany("Itens")
+                        .HasForeignKey("AssinaturaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Elo.Domain.Entities.Produto", "Produto")
+                        .WithMany()
+                        .HasForeignKey("ProdutoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Elo.Domain.Entities.ProdutoModulo", "ProdutoModulo")
+                        .WithMany()
+                        .HasForeignKey("ProdutoModuloId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Assinatura");
+
+                    b.Navigation("Produto");
+
+                    b.Navigation("ProdutoModulo");
+                });
+
             modelBuilder.Entity("Elo.Domain.Entities.ContaPagar", b =>
                 {
+                    b.HasOne("Elo.Domain.Entities.Afiliado", "Afiliado")
+                        .WithMany()
+                        .HasForeignKey("AfiliadoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
                         .WithMany()
                         .HasForeignKey("EmpresaId")
@@ -1094,8 +1425,9 @@ namespace Elo.Migrations
                     b.HasOne("Elo.Domain.Entities.Pessoa", "Fornecedor")
                         .WithMany("ContasPagar")
                         .HasForeignKey("FornecedorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Afiliado");
 
                     b.Navigation("Empresa");
 
@@ -1165,6 +1497,28 @@ namespace Elo.Migrations
                     b.Navigation("ContaReceber");
                 });
 
+            modelBuilder.Entity("Elo.Domain.Entities.EmpresaConfiguracao", b =>
+                {
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithOne("Configuracao")
+                        .HasForeignKey("Elo.Domain.Entities.EmpresaConfiguracao", "EmpresaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("Elo.Domain.Entities.EmpresaFormaPagamento", b =>
+                {
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Empresa");
+                });
+
             modelBuilder.Entity("Elo.Domain.Entities.FornecedorCategoria", b =>
                 {
                     b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
@@ -1181,6 +1535,12 @@ namespace Elo.Migrations
                     b.HasOne("Elo.Domain.Entities.Pessoa", "Cliente")
                         .WithMany("Historias")
                         .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1208,6 +1568,8 @@ namespace Elo.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Cliente");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Produto");
 
@@ -1352,6 +1714,12 @@ namespace Elo.Migrations
 
             modelBuilder.Entity("Elo.Domain.Entities.RespostaTicket", b =>
                 {
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Elo.Domain.Entities.Ticket", "Ticket")
                         .WithMany("Respostas")
                         .HasForeignKey("TicketId")
@@ -1364,6 +1732,8 @@ namespace Elo.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Empresa");
+
                     b.Navigation("Ticket");
 
                     b.Navigation("Usuario");
@@ -1374,6 +1744,12 @@ namespace Elo.Migrations
                     b.HasOne("Elo.Domain.Entities.Pessoa", "Cliente")
                         .WithMany("TicketsComoCliente")
                         .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Elo.Domain.Entities.Empresa", "Empresa")
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1399,6 +1775,8 @@ namespace Elo.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Cliente");
+
+                    b.Navigation("Empresa");
 
                     b.Navigation("Fornecedor");
 
@@ -1448,6 +1826,11 @@ namespace Elo.Migrations
                     b.Navigation("Empresa");
                 });
 
+            modelBuilder.Entity("Elo.Domain.Entities.Assinatura", b =>
+                {
+                    b.Navigation("Itens");
+                });
+
             modelBuilder.Entity("Elo.Domain.Entities.ContaPagar", b =>
                 {
                     b.Navigation("Itens");
@@ -1464,6 +1847,8 @@ namespace Elo.Migrations
 
             modelBuilder.Entity("Elo.Domain.Entities.Empresa", b =>
                 {
+                    b.Navigation("Configuracao");
+
                     b.Navigation("Usuarios");
                 });
 

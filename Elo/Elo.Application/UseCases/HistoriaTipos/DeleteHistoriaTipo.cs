@@ -1,37 +1,28 @@
 using MediatR;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.HistoriaTipos;
 
 public static class DeleteHistoriaTipo
 {
-    public class Command : IRequest<Unit>
+    public class Command : IRequest
     {
-        public int EmpresaId { get; set; }
         public int Id { get; set; }
+        public int? EmpresaId { get; set; }
     }
 
-    public class Handler : IRequestHandler<Command, Unit>
+    public class Handler : IRequestHandler<Command>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IHistoriaTipoService _service;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IHistoriaTipoService service)
         {
-            _unitOfWork = unitOfWork;
+            _service = service;
         }
 
-        public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+        public async Task Handle(Command request, CancellationToken cancellationToken)
         {
-            var tipo = await _unitOfWork.HistoriaTipos.GetByIdAsync(request.Id);
-            if (tipo == null || tipo.EmpresaId != request.EmpresaId)
-            {
-                throw new KeyNotFoundException("Tipo não encontrado para esta empresa.");
-            }
-
-            await _unitOfWork.HistoriaTipos.DeleteAsync(tipo);
-            await _unitOfWork.SaveChangesAsync();
-
-            return Unit.Value;
+            await _service.DeletarAsync(request.Id);
         }
     }
 }

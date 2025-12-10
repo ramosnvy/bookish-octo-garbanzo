@@ -6,7 +6,8 @@ public class ContaPagarDto
 {
     public int Id { get; set; }
     public int EmpresaId { get; set; }
-    public int FornecedorId { get; set; }
+    public int? FornecedorId { get; set; }
+    public int? AfiliadoId { get; set; }
     public string FornecedorNome { get; set; } = string.Empty;
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
@@ -25,7 +26,8 @@ public class ContaPagarDto
 
 public class CreateContaPagarDto
 {
-    public int FornecedorId { get; set; }
+    public int? FornecedorId { get; set; }
+    public int? AfiliadoId { get; set; }
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
     public DateTime DataVencimento { get; set; }
@@ -41,6 +43,12 @@ public class CreateContaPagarDto
 public class UpdateContaPagarDto : CreateContaPagarDto
 {
     public int Id { get; set; }
+}
+
+public class UpdateContaPagarStatusDto
+{
+    public ContaStatus Status { get; set; }
+    public DateTime? DataPagamento { get; set; }
 }
 
 public class ContaPagarItemDto
@@ -87,6 +95,6 @@ public class ContaPagarCalendarItemDto
     public decimal Valor { get; set; }
     public DateTime DataVencimento { get; set; }
     public ContaStatus Status { get; set; }
-    public int FornecedorId { get; set; }
+    public int? FornecedorId { get; set; }
     public string FornecedorNome { get; set; } = string.Empty;
 }

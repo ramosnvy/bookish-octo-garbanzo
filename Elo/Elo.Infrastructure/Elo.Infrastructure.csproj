@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Elo.Domain\Elo.Domain.csproj" />
-    <ProjectReference Include="..\Elo.Application\Elo.Application.csproj" />
+
   </ItemGroup>
 
   <ItemGroup>

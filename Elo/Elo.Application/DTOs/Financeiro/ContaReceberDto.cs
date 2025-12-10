@@ -43,6 +43,12 @@ public class UpdateContaReceberDto : CreateContaReceberDto
     public int Id { get; set; }
 }
 
+public class UpdateContaReceberStatusDto
+{
+    public ContaStatus Status { get; set; }
+    public DateTime? DataRecebimento { get; set; }
+}
+
 public class ContaReceberItemDto
 {
     public int Id { get; set; }

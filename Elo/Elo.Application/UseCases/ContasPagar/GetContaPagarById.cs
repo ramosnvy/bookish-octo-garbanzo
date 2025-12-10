@@ -1,6 +1,7 @@
 using MediatR;
 using Elo.Application.DTOs.Financeiro;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Enums;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasPagar;
 
@@ -14,36 +15,40 @@ public static class GetContaPagarById
 
     public class Handler : IRequestHandler<Query, ContaPagarDto?>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaPagarService _contaPagarService;
+        private readonly IPessoaService _pessoaService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaPagarService contaPagarService, IPessoaService pessoaService)
         {
-            _unitOfWork = unitOfWork;
+            _contaPagarService = contaPagarService;
+            _pessoaService = pessoaService;
         }
 
         public async Task<ContaPagarDto?> Handle(Query request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasPagar.GetByIdAsync(request.Id);
+            var conta = await _contaPagarService.ObterContaPagarPorIdAsync(request.Id, request.EmpresaId ?? 0);
             if (conta == null)
             {
                 return null;
             }
 
-            if (request.EmpresaId.HasValue && conta.EmpresaId != request.EmpresaId.Value)
+            string fornecedorNome = string.Empty;
+            if (conta.FornecedorId.HasValue)
             {
-                return null;
+                var fornecedor = await _pessoaService.ObterPessoaPorIdAsync(conta.FornecedorId.Value, PessoaTipo.Fornecedor, conta.EmpresaId);
+                fornecedorNome = fornecedor?.Nome ?? string.Empty;
             }
 
-            var fornecedor = await _unitOfWork.Pessoas.GetByIdAsync(conta.FornecedorId);
-            var itens = await _unitOfWork.ContaPagarItens.FindAsync(i => i.ContaPagarId == conta.Id);
-            var parcelas = await _unitOfWork.ContaPagarParcelas.FindAsync(p => p.ContaPagarId == conta.Id);
+            var itens = await _contaPagarService.ObterItensPorContaIdAsync(conta.Id);
+            var parcelas = await _contaPagarService.ObterParcelasPorContaIdAsync(conta.Id);
 
             return new ContaPagarDto
             {
                 Id = conta.Id,
                 EmpresaId = conta.EmpresaId,
                 FornecedorId = conta.FornecedorId,
-                FornecedorNome = fornecedor?.Nome ?? string.Empty,
+                AfiliadoId = conta.AfiliadoId,
+                FornecedorNome = fornecedorNome,
                 Descricao = conta.Descricao,
                 Valor = conta.Valor,
                 DataVencimento = conta.DataVencimento,

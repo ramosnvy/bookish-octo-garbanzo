@@ -1,10 +1,6 @@
 using MediatR;
 using Elo.Application.DTOs.Auth;
-using Elo.Application.Interfaces;
-using Elo.Domain.Entities;
-using Elo.Domain.Enums;
 using Elo.Domain.Interfaces;
-using Elo.Domain.Interfaces.Repositories;
 
 namespace Elo.Application.UseCases.Auth;
 
@@ -20,35 +16,25 @@ public static class Register
 
     public class Handler : IRequestHandler<Command, LoginResponse>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-        private readonly IPasswordHasher _passwordHasher;
 
-        public Handler(IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher passwordHasher)
+        public Handler(IUserService userService, IJwtService jwtService)
         {
-            _unitOfWork = unitOfWork;
+            _userService = userService;
             _jwtService = jwtService;
-            _passwordHasher = passwordHasher;
         }
 
         public async Task<LoginResponse> Handle(Command request, CancellationToken cancellationToken)
         {
-            var existingUser = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (existingUser != null)
-            {
-                throw new InvalidOperationException("Email ja esta em uso");
-            }
-
-            var user = new User
-            {
-                Nome = request.Nome,
-                Email = request.Email,
-                PasswordHash = _passwordHasher.HashPassword(request.Password),
-                Role = Enum.Parse<UserRole>(request.Role)
-            };
-
-            await _unitOfWork.Users.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
+            // UserService handles duplicating check and hashing
+            var user = await _userService.CriarUsuarioAsync(
+                request.Nome,
+                request.Email,
+                request.Password,
+                request.Role,
+                null // no EmpresaId in Register command?
+            );
 
             var token = _jwtService.GenerateToken(user);
 
@@ -58,6 +44,7 @@ public static class Register
                 Nome = user.Nome,
                 Email = user.Email,
                 Role = user.Role.ToString(),
+                EmpresaId = user.EmpresaId,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(60)
             };
         }

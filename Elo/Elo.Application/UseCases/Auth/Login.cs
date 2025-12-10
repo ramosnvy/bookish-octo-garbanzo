@@ -1,8 +1,6 @@
 using MediatR;
 using Elo.Application.DTOs.Auth;
-using Elo.Application.Interfaces;
 using Elo.Domain.Interfaces;
-using Elo.Domain.Interfaces.Repositories;
 
 namespace Elo.Application.UseCases.Auth;
 
@@ -16,22 +14,20 @@ public static class Login
 
     public class Handler : IRequestHandler<Command, LoginResponse>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserService _userService;
         private readonly IJwtService _jwtService;
-        private readonly IPasswordHasher _passwordHasher;
 
-        public Handler(IUnitOfWork unitOfWork, IJwtService jwtService, IPasswordHasher passwordHasher)
+        public Handler(IUserService userService, IJwtService jwtService)
         {
-            _unitOfWork = unitOfWork;
+            _userService = userService;
             _jwtService = jwtService;
-            _passwordHasher = passwordHasher;
         }
 
         public async Task<LoginResponse> Handle(Command request, CancellationToken cancellationToken)
         {
-            var user = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _userService.ValidarCredenciaisAsync(request.Email, request.Password);
 
-            if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("Email ou senha invalidos");
             }
@@ -45,7 +41,7 @@ public static class Login
                 Email = user.Email,
                 Role = user.Role.ToString(),
                 EmpresaId = user.EmpresaId,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(60) // Should ideally come from JwtService or config, but hardcoded in original service anyway.
             };
         }
     }

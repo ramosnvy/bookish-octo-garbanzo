@@ -26,6 +26,11 @@ public interface IUnitOfWork : IDisposable
     IRepository<ContaReceberParcela> ContaReceberParcelas { get; }
     IRepository<PessoaEndereco> PessoaEnderecos { get; }
     IRepository<FornecedorCategoria> FornecedorCategorias { get; }
+    IRepository<Afiliado> Afiliados { get; }
+    IRepository<Assinatura> Assinaturas { get; }
+    IRepository<AssinaturaItem> AssinaturaItens { get; }
+    IRepository<EmpresaFormaPagamento> EmpresaFormasPagamento { get; }
+    IRepository<EmpresaConfiguracao> EmpresaConfiguracoes { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

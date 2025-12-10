@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Elo.Application.DTOs.Financeiro;
 using Elo.Application.UseCases.ContasPagar;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 using Elo.Domain.Enums;
 
 namespace Elo.Presentation.Controllers;
@@ -87,6 +87,21 @@ public class ContasPagarController : ControllerBase
 
         var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
         var command = new UpdateContaPagar.Command { EmpresaId = empresaId, Dto = dto };
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+
+    [HttpPut("{id}/status")]
+    public async Task<ActionResult<ContaPagarDto>> UpdateStatus(int id, [FromBody] UpdateContaPagarStatusDto dto)
+    {
+        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
+        var command = new UpdateContaPagarStatus.Command 
+        { 
+            Id = id,
+            EmpresaId = empresaId, 
+            Status = dto.Status,
+            DataPagamento = dto.DataPagamento
+        };
         var result = await _mediator.Send(command);
         return Ok(result);
     }

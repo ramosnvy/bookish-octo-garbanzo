@@ -1,9 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Elo.Application.Common;
 using Elo.Application.DTOs.Historia;
 using Elo.Application.UseCases.Historias;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 using System.Security.Claims;
 
 namespace Elo.Presentation.Controllers;
@@ -22,6 +23,44 @@ public class HistoriasController : ControllerBase
         _empresaContext = empresaContext;
     }
 
+    /// <summary>
+    /// Obtém todas as histórias com paginação (otimizado para listagens)
+    /// </summary>
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<HistoriaListDto>>> GetAllPaged(
+        [FromQuery] int? statusId,
+        [FromQuery] int? tipoId,
+        [FromQuery] int? clienteId,
+        [FromQuery] int? produtoId,
+        [FromQuery] int? usuarioResponsavelId,
+        [FromQuery] DateTime? dataInicio,
+        [FromQuery] DateTime? dataFim,
+        [FromQuery] int? empresaId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var resolvedEmpresa = await _empresaContext.ResolveEmpresaAsync(empresaId, HttpContext.RequestAborted);
+        var query = new GetAllHistoriasPaged.Query
+        {
+            EmpresaId = resolvedEmpresa,
+            StatusId = statusId,
+            TipoId = tipoId,
+            ClienteId = clienteId,
+            ProdutoId = produtoId,
+            UsuarioResponsavelId = usuarioResponsavelId,
+            DataInicio = dataInicio,
+            DataFim = dataFim,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtém todas as histórias (completas, sem paginação - use apenas quando necessário)
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HistoriaDto>>> GetAll(
         [FromQuery] int? statusId,

@@ -1,5 +1,5 @@
 using MediatR;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasReceber;
 
@@ -13,24 +13,16 @@ public static class DeleteContaReceber
 
     public class Handler : IRequestHandler<Command, bool>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaReceberService _contaReceberService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaReceberService contaReceberService)
         {
-            _unitOfWork = unitOfWork;
+            _contaReceberService = contaReceberService;
         }
 
         public async Task<bool> Handle(Command request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasReceber.GetByIdAsync(request.Id) ?? throw new KeyNotFoundException("Conta não encontrada.");
-            if (conta.EmpresaId != request.EmpresaId)
-            {
-                throw new UnauthorizedAccessException("Conta pertence a outra empresa.");
-            }
-
-            await _unitOfWork.ContasReceber.DeleteAsync(conta);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
+            return await _contaReceberService.DeletarContaReceberAsync(request.Id, request.EmpresaId);
         }
     }
 }

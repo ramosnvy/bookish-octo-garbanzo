@@ -10,5 +10,7 @@ public interface IProdutoService
     Task<bool> DeletarProdutoAsync(int id, int empresaId);
     Task<Produto?> ObterProdutoPorIdAsync(int id, int? empresaId = null);
     Task<IEnumerable<Produto>> ObterTodosProdutosAsync(int? empresaId = null);
+    Task<IEnumerable<Produto>> ObterProdutosPorIdsAsync(IEnumerable<int> ids);
+    Task<IEnumerable<ProdutoModulo>> ObterModulosPorIdsAsync(IEnumerable<int> ids);
     decimal CalcularMargemLucro(decimal valorCusto, decimal valorRevenda);
 }

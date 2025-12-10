@@ -32,6 +32,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<PessoaEndereco> PessoaEnderecos { get; set; }
     public DbSet<FornecedorCategoria> FornecedorCategorias { get; set; }
     public DbSet<ProdutoModulo> ProdutoModulos { get; set; }
+    public DbSet<Afiliado> Afiliados { get; set; }
+    public DbSet<Assinatura> Assinaturas { get; set; }
+    public DbSet<AssinaturaItem> AssinaturaItens { get; set; }
+    public DbSet<EmpresaFormaPagamento> EmpresaFormasPagamento { get; set; }
+    public DbSet<EmpresaConfiguracao> EmpresaConfiguracoes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +49,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
             entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Status).IsRequired().HasDefaultValue(Status.Ativo);
             entity.HasIndex(e => e.Email).IsUnique();
 
             entity.HasOne(e => e.Empresa)
@@ -163,6 +169,11 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Observacoes).HasMaxLength(1000);
             entity.Property(e => e.PrevisaoDias);
 
+            entity.HasOne(d => d.Empresa)
+                .WithMany()
+                .HasForeignKey(d => d.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(d => d.Cliente)
                 .WithMany(p => p.Historias)
                 .HasForeignKey(d => d.ClienteId)
@@ -278,6 +289,11 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Descricao).IsRequired().HasMaxLength(2000);
             entity.Property(e => e.NumeroExterno).HasMaxLength(60).HasDefaultValue(string.Empty);
 
+            entity.HasOne(d => d.Empresa)
+                .WithMany()
+                .HasForeignKey(d => d.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(d => d.Cliente)
                 .WithMany(p => p.TicketsComoCliente)
                 .HasForeignKey(d => d.ClienteId)
@@ -349,6 +365,11 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Mensagem).IsRequired().HasMaxLength(2000);
 
+            entity.HasOne(d => d.Empresa)
+                .WithMany()
+                .HasForeignKey(d => d.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(d => d.Ticket)
                 .WithMany(p => p.Respostas)
                 .HasForeignKey(d => d.TicketId)
@@ -416,6 +437,11 @@ public class ApplicationDbContext : DbContext
                 .WithMany(p => p.ContasPagar)
                 .HasForeignKey(d => d.FornecedorId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            entity.HasOne(d => d.Afiliado)
+                .WithMany()
+                .HasForeignKey(d => d.AfiliadoId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ContaPagarItem>(entity =>
@@ -448,6 +474,96 @@ public class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Valor).HasColumnType("decimal(18,2)");
+        });
+
+        // Afiliado configuration
+        modelBuilder.Entity<Afiliado>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Documento).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.Telefone).HasMaxLength(20);
+            entity.Property(e => e.Porcentagem).HasColumnType("decimal(5,2)");
+            entity.Property(e => e.Status).IsRequired();
+            entity.HasIndex(e => new { e.EmpresaId, e.Email }).IsUnique();
+            entity.HasIndex(e => new { e.EmpresaId, e.Documento }).IsUnique();
+
+            entity.HasOne(e => e.Empresa)
+                .WithMany()
+                .HasForeignKey(e => e.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Assinatura configuration
+        modelBuilder.Entity<Assinatura>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Ativo).HasDefaultValue(true);
+            entity.Property(e => e.IsRecorrente).HasDefaultValue(false);
+
+            entity.HasOne(e => e.Cliente)
+                .WithMany()
+                .HasForeignKey(e => e.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Empresa)
+                .WithMany()
+                .HasForeignKey(e => e.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Afiliado)
+                .WithMany()
+                .HasForeignKey(e => e.AfiliadoId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasMany(e => e.Itens)
+                .WithOne(i => i.Assinatura)
+                .HasForeignKey(i => i.AssinaturaId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AssinaturaItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(e => e.Produto)
+                .WithMany()
+                .HasForeignKey(e => e.ProdutoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ProdutoModulo)
+                .WithMany()
+                .HasForeignKey(e => e.ProdutoModuloId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // EmpresaFormaPagamento configuration
+        modelBuilder.Entity<EmpresaFormaPagamento>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FormaPagamento).IsRequired();
+            entity.Property(e => e.Ativo).HasDefaultValue(true);
+            entity.HasIndex(e => new { e.EmpresaId, e.FormaPagamento }).IsUnique();
+
+            entity.HasOne(e => e.Empresa)
+                .WithMany()
+                .HasForeignKey(e => e.EmpresaId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // EmpresaConfiguracao configuration
+        modelBuilder.Entity<EmpresaConfiguracao>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.JurosValor).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.MoraValor).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.DiaPagamentoAfiliado).HasDefaultValue(1);
+
+            entity.HasOne(e => e.Empresa)
+                .WithOne(e => e.Configuracao)
+                .HasForeignKey<EmpresaConfiguracao>(e => e.EmpresaId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

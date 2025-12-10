@@ -1,5 +1,5 @@
 using MediatR;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.ContasPagar;
 
@@ -13,24 +13,16 @@ public static class DeleteContaPagar
 
     public class Handler : IRequestHandler<Command, bool>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IContaPagarService _contaPagarService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IContaPagarService contaPagarService)
         {
-            _unitOfWork = unitOfWork;
+            _contaPagarService = contaPagarService;
         }
 
         public async Task<bool> Handle(Command request, CancellationToken cancellationToken)
         {
-            var conta = await _unitOfWork.ContasPagar.GetByIdAsync(request.Id) ?? throw new KeyNotFoundException("Conta não encontrada.");
-            if (conta.EmpresaId != request.EmpresaId)
-            {
-                throw new UnauthorizedAccessException("Conta pertence a outra empresa.");
-            }
-
-            await _unitOfWork.ContasPagar.DeleteAsync(conta);
-            await _unitOfWork.SaveChangesAsync();
-            return true;
+            return await _contaPagarService.DeletarContaPagarAsync(request.Id, request.EmpresaId);
         }
     }
 }

@@ -698,7 +698,6 @@
       "Elo.Infrastructure/1.0.0": {
         "dependencies": {
           "BCrypt.Net-Next": "4.0.3",
-          "Elo.Application": "1.0.0",
           "Elo.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "8.0.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.0",

@@ -64,4 +64,39 @@ public class EmpresasController : ControllerBase
         var result = await _mediator.Send(command);
         return Ok(result);
     }
+
+    [HttpPatch("{id:int}/status")]
+    public async Task<ActionResult<EmpresaDto>> UpdateStatus(int id, [FromBody] UpdateEmpresaStatusDto dto)
+    {
+        var command = new UpdateEmpresaStatus.Command
+        {
+            Id = id,
+            Ativo = dto.Ativo
+        };
+
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+    [HttpGet("{id:int}/configuracao")]
+    public async Task<ActionResult<EmpresaConfiguracaoDto>> GetConfiguracao(int id)
+    {
+        var query = new GetEmpresaConfiguracao.Query { EmpresaId = id };
+        var result = await _mediator.Send(query);
+        
+        if (result == null) return NotFound();
+        
+        return Ok(result);
+    }
+
+    [HttpPut("{id:int}/configuracao")]
+    public async Task<ActionResult<EmpresaConfiguracaoDto>> UpdateConfiguracao(int id, [FromBody] UpdateEmpresaConfiguracaoDto dto)
+    {
+        var command = new UpdateEmpresaConfiguracao.Command
+        {
+            EmpresaId = id,
+            Dto = dto
+        };
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
 }

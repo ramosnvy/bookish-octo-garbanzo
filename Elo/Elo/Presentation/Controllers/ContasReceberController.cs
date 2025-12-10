@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Elo.Application.DTOs.Financeiro;
 using Elo.Application.UseCases.ContasReceber;
-using Elo.Application.Interfaces;
 using Elo.Domain.Enums;
 using Microsoft.AspNetCore.Http;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Presentation.Controllers;
 
@@ -83,6 +83,21 @@ public class ContasReceberController : ControllerBase
         var command = new DeleteContaReceber.Command { Id = id, EmpresaId = empresaId };
         await _mediator.Send(command);
         return NoContent();
+    }
+
+    [HttpPut("{id}/status")]
+    public async Task<ActionResult<ContaReceberDto>> UpdateStatus(int id, [FromBody] UpdateContaReceberStatusDto dto)
+    {
+        var empresaId = await _empresaContext.RequireEmpresaAsync(null, HttpContext.RequestAborted);
+        var command = new UpdateContaReceberStatus.Command 
+        { 
+            Id = id,
+            EmpresaId = empresaId, 
+            Status = dto.Status,
+            DataRecebimento = dto.DataRecebimento
+        };
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 
     [HttpPut("{contaId}/parcelas/{parcelaId}/status")]

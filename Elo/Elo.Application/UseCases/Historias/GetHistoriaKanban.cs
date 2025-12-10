@@ -55,8 +55,19 @@ public static class GetHistoriaKanban
             return new HistoriaKanbanDto
             {
                 Historias = historias,
-                Statuses = statuses,
-                Tipos = tipos
+                Statuses = statuses.Select(s => new HistoriaStatusDto 
+                { 
+                    Id = s.Id, 
+                    Nome = s.Nome, 
+                    Cor = s.Cor, 
+                    Ordem = s.Ordem
+                }),
+                Tipos = tipos.Select(t => new HistoriaTipoDto 
+                { 
+                    Id = t.Id, 
+                    Nome = t.Nome, 
+                    Descricao = t.Descricao
+                })
             };
         }
     }

@@ -15,6 +15,7 @@ public class Ticket
     public int? UsuarioAtribuidoId { get; set; }
     public int? ProdutoId { get; set; }
     public int? FornecedorId { get; set; }
+    public int EmpresaId { get; set; }
     public DateTime DataAbertura { get; set; } = DateTime.UtcNow;
     public DateTime? DataFechamento { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -26,6 +27,7 @@ public class Ticket
     public virtual TicketTipo TicketTipo { get; set; } = null!;
     public virtual Produto? Produto { get; set; }
     public virtual Pessoa? Fornecedor { get; set; }
+    public virtual Empresa Empresa { get; set; } = null!;
     public virtual ICollection<RespostaTicket> Respostas { get; set; } = new List<RespostaTicket>();
     public virtual ICollection<TicketAnexo> Anexos { get; set; } = new List<TicketAnexo>();
 }

@@ -56,6 +56,7 @@ public static class SwaggerConfiguration
             {
                 c.IncludeXmlComments(xmlPath);
             }
+            c.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
         });
 
         return services;

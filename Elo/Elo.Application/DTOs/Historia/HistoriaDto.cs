@@ -10,17 +10,44 @@ public class HistoriaDto
     public string ClienteNome { get; set; } = string.Empty;
     public int ProdutoId { get; set; }
     public string ProdutoNome { get; set; } = string.Empty;
-    public int StatusId { get; set; }
-    public string StatusNome { get; set; } = string.Empty;
-    public string? StatusCor { get; set; }
+    public int HistoriaStatusId { get; set; }
+    public string HistoriaStatusNome { get; set; } = string.Empty;
+    public string? HistoriaStatusCor { get; set; }
+    
+    // Alias/Compatibility properties if used old names
+    public int StatusId 
+    { 
+        get => HistoriaStatusId; 
+        set => HistoriaStatusId = value; 
+    }
+    public string StatusNome 
+    { 
+        get => HistoriaStatusNome; 
+        set => HistoriaStatusNome = value; 
+    }
+    public string? StatusCor 
+    { 
+        get => HistoriaStatusCor; 
+        set => HistoriaStatusCor = value; 
+    }
+
     public bool StatusFechaHistoria { get; set; }
-    public int TipoId { get; set; }
-    public string TipoNome { get; set; } = string.Empty;
+    public int TipoId { get; set; } 
+    public int HistoriaTipoId { get; set; } 
+    public string HistoriaTipoNome { get; set; } = string.Empty;
+    
+    public string TipoNome 
+    { 
+        get => HistoriaTipoNome; 
+        set => HistoriaTipoNome = value; 
+    }
+    
     public string? TipoDescricao { get; set; }
     public int? UsuarioResponsavelId { get; set; }
     public string UsuarioResponsavelNome { get; set; } = string.Empty;
     public int? PrevisaoDias { get; set; }
     public DateTime DataInicio { get; set; }
+    public DateTime? DataFim { get; set; }
     public DateTime? DataFinalizacao { get; set; }
     public string? Observacoes { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -32,6 +59,7 @@ public class HistoriaDto
 public class CreateHistoriaDto
 {
     public int ClienteId { get; set; }
+    public int ProdutoId { get; set; }
     public int StatusId { get; set; }
     public int TipoId { get; set; }
     public int? UsuarioResponsavelId { get; set; }
@@ -47,16 +75,30 @@ public class UpdateHistoriaDto : CreateHistoriaDto
 
 public class HistoriaProdutoDto
 {
+    public int Id { get; set; }
+    public int HistoriaId { get; set; }
     public int ProdutoId { get; set; }
     public string ProdutoNome { get; set; } = string.Empty;
-    public IEnumerable<int> ProdutoModuloIds { get; set; } = Enumerable.Empty<int>();
-    public IEnumerable<string> ProdutoModuloNomes { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<int>? ProdutoModuloIds { get; set; }
+    public ICollection<HistoriaProdutoModuloDto> Modulos { get; set; } = new List<HistoriaProdutoModuloDto>();
+    
+    public IEnumerable<string> ProdutoModuloNomes 
+    {
+        get => Modulos.Select(m => m.Nome);
+        set { /* Ignore or implement logic if strictly needed, but getter usually suffices for DTO serialization */ }
+    }
 }
 
 public class HistoriaProdutoInputDto
 {
     public int ProdutoId { get; set; }
     public IEnumerable<int> ProdutoModuloIds { get; set; } = Enumerable.Empty<int>();
+}
+
+public class HistoriaProdutoModuloDto
+{
+    public int Id { get; set; }
+    public string Nome { get; set; } = string.Empty;
 }
 
 public class HistoriaMovimentacaoDto

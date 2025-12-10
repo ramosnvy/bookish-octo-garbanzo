@@ -2,8 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Elo.Application.DTOs.Ticket;
-using Elo.Application.Interfaces;
 using Elo.Application.UseCases.TicketTipos;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Presentation.Controllers;
 

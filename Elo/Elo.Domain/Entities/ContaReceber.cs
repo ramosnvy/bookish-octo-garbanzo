@@ -7,6 +7,7 @@ public class ContaReceber
     public int Id { get; set; }
     public int EmpresaId { get; set; }
     public int ClienteId { get; set; }
+    public int? AssinaturaId { get; set; }
     public string Descricao { get; set; } = string.Empty;
     public decimal Valor { get; set; }
     public DateTime DataVencimento { get; set; }

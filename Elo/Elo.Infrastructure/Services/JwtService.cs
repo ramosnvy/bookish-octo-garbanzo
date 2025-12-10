@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 using Elo.Domain.Entities;
 
 namespace Elo.Infrastructure.Services;

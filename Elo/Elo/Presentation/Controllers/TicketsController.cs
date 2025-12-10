@@ -2,9 +2,10 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Elo.Application.Common;
 using Elo.Application.DTOs.Ticket;
 using Elo.Application.UseCases.Tickets;
-using Elo.Application.Interfaces;
+using Elo.Domain.Interfaces;
 using System.Security.Claims;
 using System.IO;
 
@@ -24,6 +25,48 @@ public class TicketsController : ControllerBase
         _empresaContext = empresaContext;
     }
 
+    /// <summary>
+    /// Obtém todos os tickets com paginação (otimizado para listagens)
+    /// </summary>
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<TicketListDto>>> GetAllPaged(
+        [FromQuery] Domain.Enums.TicketStatus? status,
+        [FromQuery] int? tipoId,
+        [FromQuery] Domain.Enums.TicketPrioridade? prioridade,
+        [FromQuery] int? clienteId,
+        [FromQuery] int? produtoId,
+        [FromQuery] int? fornecedorId,
+        [FromQuery] int? usuarioAtribuidoId,
+        [FromQuery] DateTime? dataAberturaInicio,
+        [FromQuery] DateTime? dataAberturaFim,
+        [FromQuery] int? empresaId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var resolvedEmpresa = await _empresaContext.ResolveEmpresaAsync(empresaId, HttpContext.RequestAborted);
+        var query = new GetAllTicketsPaged.Query
+        {
+            EmpresaId = resolvedEmpresa,
+            Status = status,
+            TipoId = tipoId,
+            Prioridade = prioridade,
+            ClienteId = clienteId,
+            ProdutoId = produtoId,
+            FornecedorId = fornecedorId,
+            UsuarioAtribuidoId = usuarioAtribuidoId,
+            DataAberturaInicio = dataAberturaInicio,
+            DataAberturaFim = dataAberturaFim,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Obtém todos os tickets (completos, sem paginação - use apenas quando necessário)
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TicketDto>>> GetAll(
         [FromQuery] Domain.Enums.TicketStatus? status,

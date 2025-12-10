@@ -38,3 +38,8 @@ public class UpdateEmpresaDto
     public string Endereco { get; set; } = string.Empty;
     public bool Ativo { get; set; } = true;
 }
+
+public class UpdateEmpresaStatusDto
+{
+    public bool Ativo { get; set; }
+}

@@ -1,42 +1,28 @@
 using MediatR;
-using Elo.Domain.Enums;
-using Elo.Domain.Interfaces.Repositories;
+using Elo.Domain.Interfaces;
 
 namespace Elo.Application.UseCases.Historias;
 
 public static class DeleteHistoria
 {
-    public class Command : IRequest
+    public class Command : IRequest<bool>
     {
         public int Id { get; set; }
         public int EmpresaId { get; set; }
     }
 
-    public class Handler : IRequestHandler<Command>
+    public class Handler : IRequestHandler<Command, bool>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IHistoriaService _historiaService;
 
-        public Handler(IUnitOfWork unitOfWork)
+        public Handler(IHistoriaService historiaService)
         {
-            _unitOfWork = unitOfWork;
+            _historiaService = historiaService;
         }
 
-        public async Task Handle(Command request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(Command request, CancellationToken cancellationToken)
         {
-            var historia = await _unitOfWork.Historias.GetByIdAsync(request.Id);
-            if (historia == null)
-            {
-                throw new KeyNotFoundException("Ação não encontrada.");
-            }
-
-            var cliente = await _unitOfWork.Pessoas.GetByIdAsync(historia.ClienteId);
-            if (cliente == null || cliente.Tipo != PessoaTipo.Cliente || cliente.EmpresaId != request.EmpresaId)
-            {
-                throw new UnauthorizedAccessException("História não pertence à empresa informada.");
-            }
-
-            await _unitOfWork.Historias.DeleteAsync(historia);
-            await _unitOfWork.SaveChangesAsync();
+            return await _historiaService.DeletarHistoriaAsync(request.Id, request.EmpresaId);
         }
     }
 }

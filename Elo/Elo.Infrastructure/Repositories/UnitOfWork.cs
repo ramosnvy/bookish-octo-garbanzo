@@ -35,6 +35,11 @@ public class UnitOfWork : IUnitOfWork
         ContaReceberParcelas = new Repository<ContaReceberParcela>(_context);
         PessoaEnderecos = new Repository<PessoaEndereco>(_context);
         FornecedorCategorias = new Repository<FornecedorCategoria>(_context);
+        Afiliados = new Repository<Afiliado>(_context);
+        Assinaturas = new Repository<Assinatura>(_context);
+        AssinaturaItens = new Repository<AssinaturaItem>(_context);
+        EmpresaFormasPagamento = new Repository<EmpresaFormaPagamento>(_context);
+        EmpresaConfiguracoes = new Repository<EmpresaConfiguracao>(_context);
     }
 
     public IRepository<Empresa> Empresas { get; }
@@ -59,6 +64,11 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<ContaReceberParcela> ContaReceberParcelas { get; }
     public IRepository<PessoaEndereco> PessoaEnderecos { get; }
     public IRepository<FornecedorCategoria> FornecedorCategorias { get; }
+    public IRepository<Afiliado> Afiliados { get; }
+    public IRepository<Assinatura> Assinaturas { get; }
+    public IRepository<AssinaturaItem> AssinaturaItens { get; }
+    public IRepository<EmpresaFormaPagamento> EmpresaFormasPagamento { get; }
+    public IRepository<EmpresaConfiguracao> EmpresaConfiguracoes { get; }
 
     public async Task<int> SaveChangesAsync()
     {

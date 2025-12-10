@@ -24,7 +24,7 @@ public class UserService : IUserService
         return user != null && user.Id != userIdExcluido;
     }
 
-    public async Task<User> CriarUsuarioAsync(string nome, string email, string password, string role, int? empresaId = null)
+    public async Task<User> CriarUsuarioAsync(string nome, string email, string password, string role, int? empresaId = null, Status status = Status.Ativo)
     {
         // Validações de negócio
         if (await EmailJaExisteAsync(email))
@@ -39,6 +39,11 @@ public class UserService : IUserService
             {
                 throw new InvalidOperationException("Empresa informada não existe.");
             }
+            
+            if (!empresaExiste.Ativo)
+            {
+                throw new EmpresaInativaException("Não é possível criar usuário para empresa inativa.");
+            }
         }
 
         // Criação da entidade
@@ -48,6 +53,7 @@ public class UserService : IUserService
             Email = email,
             PasswordHash = _passwordHasher.HashPassword(password),
             Role = Enum.Parse<UserRole>(role),
+            Status = status,
             EmpresaId = empresaId,
             CreatedAt = DateTime.UtcNow
         };
@@ -67,6 +73,22 @@ public class UserService : IUserService
             return null;
         }
 
+        // Validar status do usuário
+        if (user.Status != Status.Ativo)
+        {
+            throw new UsuarioInativoException("Usuário inativo. Entre em contato com o administrador.");
+        }
+
+        // Validar se a empresa está ativa (se o usuário pertence a uma empresa)
+        if (user.EmpresaId.HasValue)
+        {
+            var empresa = await _unitOfWork.Empresas.GetByIdAsync(user.EmpresaId.Value);
+            if (empresa == null || !empresa.Ativo)
+            {
+                throw new EmpresaInativaException("Empresa inativa. Entre em contato com o administrador.");
+            }
+        }
+
         return user;
     }
 
@@ -80,7 +102,7 @@ public class UserService : IUserService
         return await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User> AtualizarUsuarioAsync(int id, string nome, string email, string role, int? empresaId = null)
+    public async Task<User> AtualizarUsuarioAsync(int id, string nome, string email, string role, int? empresaId = null, Status? status = null)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(id);
         if (user == null)
@@ -101,12 +123,21 @@ public class UserService : IUserService
             {
                 throw new InvalidOperationException("Empresa informada não existe.");
             }
+            
+            if (!empresaExiste.Ativo)
+            {
+                throw new EmpresaInativaException("Não é possível associar usuário a empresa inativa.");
+            }
         }
 
         // Atualização da entidade
         user.Nome = nome;
         user.Email = email;
         user.Role = Enum.Parse<UserRole>(role);
+        if (status.HasValue)
+        {
+            user.Status = status.Value;
+        }
         user.EmpresaId = empresaId;
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -160,5 +191,12 @@ public class UserService : IUserService
         }
 
         return await _unitOfWork.Users.GetAllAsync();
+    }
+
+    public async Task<IEnumerable<User>> ObterUsuariosPorIdsAsync(IEnumerable<int> ids)
+    {
+        if (!ids.Any()) return Enumerable.Empty<User>();
+        var idList = ids.Distinct().ToList();
+        return await _unitOfWork.Users.FindAsync(u => idList.Contains(u.Id));
     }
 }
