@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj": {}
+    "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj": {}
   },
   "projects": {
-    "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj": {
+    "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj",
+        "projectUniqueName": "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj",
         "projectName": "Elo.Domain",
-        "projectPath": "C:\\ramosnvy\\Elo\\Elo.Domain\\Elo.Domain.csproj",
-        "packagesPath": "C:\\Users\\pedro\\.nuget\\packages\\",
-        "outputPath": "C:\\ramosnvy\\Elo\\Elo.Domain\\obj\\",
+        "projectPath": "/mnt/c/ramosnvy/Elo/Elo.Domain/Elo.Domain.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/mnt/c/ramosnvy/Elo/Elo.Domain/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\pedro\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,13 +32,7 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
         "net8.0": {
@@ -65,7 +53,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.121/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

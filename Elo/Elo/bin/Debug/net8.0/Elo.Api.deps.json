@@ -681,18 +681,12 @@
           "MediatR": "12.2.0"
         },
         "runtime": {
-          "Elo.Application.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "Elo.Application.dll": {}
         }
       },
       "Elo.Domain/1.0.0": {
         "runtime": {
-          "Elo.Domain.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "Elo.Domain.dll": {}
         }
       },
       "Elo.Infrastructure/1.0.0": {
@@ -704,10 +698,7 @@
           "System.IdentityModel.Tokens.Jwt": "8.0.0"
         },
         "runtime": {
-          "Elo.Infrastructure.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "Elo.Infrastructure.dll": {}
         }
       }
     }

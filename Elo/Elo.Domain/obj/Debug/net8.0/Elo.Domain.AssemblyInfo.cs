@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Elo.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+035c365cc2269cd8ae202569fd2559aeea799d85")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4a3c5b9ba8721de6faf78091411100929cfef720")]
 [assembly: System.Reflection.AssemblyProductAttribute("Elo.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Elo.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

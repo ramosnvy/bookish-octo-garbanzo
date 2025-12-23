@@ -112,8 +112,6 @@ public class AssinaturaService : IAssinaturaService
         await _unitOfWork.SaveChangesAsync();
 
         // 2. Add Items
-        var produtosInfo = new List<(string Nome, decimal Valor)>();
-
         if (itens != null && itens.Any())
         {
             foreach (var item in itens)
@@ -124,26 +122,79 @@ public class AssinaturaService : IAssinaturaService
                     ProdutoId = item.ProdutoId,
                     ProdutoModuloId = item.ProdutoModuloId
                 });
+            }
+            await _unitOfWork.SaveChangesAsync();
+        }
 
-                // Fetch info for Financeiro if needed
-                if (gerarFinanceiro)
+        var produtosInfo = new List<(string Nome, decimal Valor)>();
+        var contasPagarInfo = new List<(int FornecedorId, string Descricao, decimal Valor, int? ProdutoId, List<int>? ModuloIds)>();
+
+        if (gerarFinanceiro && itens != null && itens.Any())
+        {
+            var moduloCache = new Dictionary<int, ProdutoModulo?>();
+
+            async Task<ProdutoModulo?> GetModuloAsync(int moduloId)
+            {
+                if (moduloCache.TryGetValue(moduloId, out var cached))
                 {
-                    var prod = await _unitOfWork.Produtos.GetByIdAsync(item.ProdutoId);
-                    if (prod != null)
+                    return cached;
+                }
+
+                var modulo = await _unitOfWork.ProdutoModulos.GetByIdAsync(moduloId);
+                moduloCache[moduloId] = modulo;
+                return modulo;
+            }
+
+            var itensPorProduto = itens.GroupBy(i => i.ProdutoId);
+            foreach (var grupo in itensPorProduto)
+            {
+                var produto = await _unitOfWork.Produtos.GetByIdAsync(grupo.Key);
+                if (produto == null || produto.EmpresaId != empresaId)
+                    continue;
+
+                var baseEntries = grupo.Where(i => !i.ProdutoModuloId.HasValue).ToList();
+                var moduleEntries = grupo.Where(i => i.ProdutoModuloId.HasValue).ToList();
+
+                foreach (var _ in baseEntries)
+                {
+                    produtosInfo.Add((produto.Nome, produto.ValorRevenda));
+                }
+
+                if (!baseEntries.Any() && moduleEntries.Any())
+                {
+                    produtosInfo.Add((produto.Nome, produto.ValorRevenda));
+                }
+
+                if (produto.FornecedorId.HasValue && produto.FornecedorId.Value > 0)
+                {
+                    var fornecedorId = produto.FornecedorId.Value;
+                    if (baseEntries.Any())
                     {
-                        produtosInfo.Add((prod.Nome, prod.ValorRevenda));
-                    }
-                    if (item.ProdutoModuloId.HasValue)
-                    {
-                        var mod = await _unitOfWork.ProdutoModulos.GetByIdAsync(item.ProdutoModuloId.Value);
-                        if (mod != null)
+                        foreach (var _ in baseEntries)
                         {
-                            produtosInfo.Add((mod.Nome, mod.ValorAdicional));
+                            contasPagarInfo.Add((fornecedorId, produto.Nome, produto.ValorCusto, produto.Id, null));
                         }
+                    }
+                    else if (moduleEntries.Any())
+                    {
+                        contasPagarInfo.Add((fornecedorId, produto.Nome, produto.ValorCusto, produto.Id, null));
+                    }
+                }
+
+                foreach (var moduleEntry in moduleEntries)
+                {
+                    var modulo = await GetModuloAsync(moduleEntry.ProdutoModuloId!.Value);
+                    if (modulo == null)
+                        continue;
+
+                    produtosInfo.Add((modulo.Nome, modulo.ValorAdicional));
+
+                    if (produto.FornecedorId.HasValue && produto.FornecedorId.Value > 0 && modulo.CustoAdicional > 0)
+                    {
+                        contasPagarInfo.Add((produto.FornecedorId.Value, $"{modulo.Nome} (Módulo de {produto.Nome})", modulo.CustoAdicional, produto.Id, new List<int> { modulo.Id }));
                     }
                 }
             }
-            await _unitOfWork.SaveChangesAsync();
         }
 
         // 3. Gerar Implantação (Kanban)
@@ -243,84 +294,57 @@ public class AssinaturaService : IAssinaturaService
         }
 
         // 5. Gerar Financeiro (ContasPagar para Fornecedores)
-        if (gerarFinanceiro)
+        if (gerarFinanceiro && contasPagarInfo.Any())
         {
-            var contasPagarInfo = new List<(int FornecedorId, string Descricao, decimal Valor, int? ProdutoId, List<int>? ModuloIds)>();
-
-            if (itens != null && itens.Any())
+            var porFornecedor = contasPagarInfo.GroupBy(x => x.FornecedorId);
+            foreach (var group in porFornecedor)
             {
-                foreach (var item in itens)
+                var fornecedorId = group.Key;
+                var fornecedor = await _unitOfWork.Pessoas.GetByIdAsync(fornecedorId);
+
+                if (fornecedor != null)
                 {
-                    var prod = await _unitOfWork.Produtos.GetByIdAsync(item.ProdutoId);
-                    if (prod != null && prod.FornecedorId.HasValue && prod.FornecedorId.Value > 0)
+                    var totalCusto = group.Sum(x => x.Valor);
+                    var cpItens = group.Select(x => new ContaPagarItemInput(x.Descricao, x.Valor, x.ProdutoId, x.ModuloIds)).ToList();
+
+                    int qtde = isRecorrente ? (recorrenciaQtde ?? 1) : 1;
+                    int intervalo = (isRecorrente && intervaloDias.HasValue) ? intervaloDias.Value : 30;
+
+                    for (int i = 0; i < qtde; i++)
                     {
-                        contasPagarInfo.Add((prod.FornecedorId.Value, prod.Nome, prod.ValorCusto, prod.Id, null));
-                        
-                        if (item.ProdutoModuloId.HasValue)
+                        var vencimentoBase = dataInicio.AddDays(intervalo * i);
+                        var vencimento = vencimentoBase;
+
+                        if (fornecedor.ServicoPagamentoTipo == ServicoPagamentoTipo.PosPago)
                         {
-                            var mod = await _unitOfWork.ProdutoModulos.GetByIdAsync(item.ProdutoModuloId.Value);
-                            if (mod != null && mod.CustoAdicional > 0)
-                            {
-                                // Assumes the module is supplied by the same supplier as the product
-                                contasPagarInfo.Add((prod.FornecedorId.Value, $"{mod.Nome} (Módulo de {prod.Nome})", mod.CustoAdicional, prod.Id, new List<int> { mod.Id }));
-                            }
+                            vencimento = vencimentoBase.AddDays(fornecedor.PrazoPagamentoDias);
                         }
-                    }
-                }
-            }
-
-            if (contasPagarInfo.Any())
-            {
-                var porFornecedor = contasPagarInfo.GroupBy(x => x.FornecedorId);
-                foreach (var group in porFornecedor)
-                {
-                    var fornecedorId = group.Key;
-                    var fornecedor = await _unitOfWork.Pessoas.GetByIdAsync(fornecedorId);
-
-                    if (fornecedor != null)
-                    {
-                        var totalCusto = group.Sum(x => x.Valor);
-                        var cpItens = group.Select(x => new ContaPagarItemInput(x.Descricao, x.Valor, x.ProdutoId, x.ModuloIds)).ToList();
-
-                        int qtde = isRecorrente ? (recorrenciaQtde ?? 1) : 1;
-                        int intervalo = (isRecorrente && intervaloDias.HasValue) ? intervaloDias.Value : 30;
-
-                        for (int i = 0; i < qtde; i++)
+                        else
                         {
-                            var vencimentoBase = dataInicio.AddDays(intervalo * i);
-                            var vencimento = vencimentoBase;
-
-                            if (fornecedor.ServicoPagamentoTipo == ServicoPagamentoTipo.PosPago)
-                            {
-                                vencimento = vencimentoBase.AddDays(fornecedor.PrazoPagamentoDias);
-                            }
-                            else
-                            {
-                                vencimento = vencimentoBase.AddDays(-fornecedor.PrazoPagamentoDias);
-                            }
-
-                            var descricao = $"Custo Assinatura #{createdAssinatura.Id}";
-                            if (qtde > 1)
-                            {
-                                descricao += $" - {i + 1}/{qtde}";
-                            }
-
-                            await _contaPagarService.CriarContaPagarAsync(
-                                fornecedorId,
-                                descricao,
-                                totalCusto,
-                                vencimento,
-                                null, // Data Pagamento
-                                ContaStatus.Pendente,
-                                "Custos de Assinatura", // Categoria
-                                false, // Não é recorrente (é conta única)
-                                1, // Parcelas
-                                null, // Intervalo
-                                empresaId,
-                                cpItens,
-                                createdAssinatura.Id // AssinaturaId
-                            );
+                            vencimento = vencimentoBase.AddDays(-fornecedor.PrazoPagamentoDias);
                         }
+
+                        var descricao = $"Custo Assinatura #{createdAssinatura.Id}";
+                        if (qtde > 1)
+                        {
+                            descricao += $" - {i + 1}/{qtde}";
+                        }
+
+                        await _contaPagarService.CriarContaPagarAsync(
+                            fornecedorId,
+                            descricao,
+                            totalCusto,
+                            vencimento,
+                            null, // Data Pagamento
+                            ContaStatus.Pendente,
+                            "Custos de Assinatura", // Categoria
+                            false, // Não é recorrente (é conta única)
+                            1, // Parcelas
+                            null, // Intervalo
+                            empresaId,
+                            cpItens,
+                            createdAssinatura.Id // AssinaturaId
+                        );
                     }
                 }
             }
